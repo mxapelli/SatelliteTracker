@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite</title>
+    <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/04/Satellite-Download-PNG.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Satellite</h1>
+    {% for entry in entries %}
+       <p>{{ entry }}</p>
+    {% endfor %}
+    <a href="{{number}}/doppler" class="btn btn-primary">View Doppler Analysis</a>
+    <div>
+        <canvas id="myChart"></canvas>
+        <script>
+            userLLA=[]
+            userLLA.push({x: "{{userlong}}",y: "{{userlat}}"});
+            long=[{% for item in longs %}
+                "{{ item }}",
+                {% endfor %}]
+
+            lat=[{% for item in lats %}
+                "{{ item }}",
+                {% endfor %}]
+                satPos=[];
+                for(var j=1; j<long.length; j++) {
+                    satPos.push({x: long[j],y: lat[j]});
+                }
+            wordlLat=[{% for item in worldLa %}
+                "{{ item }}",
+                {% endfor %}]
+
+            worldLong=[{% for item in worldLo %}
+                "{{ item }}",
+                {% endfor %}]
+                worldPos=[];
+                for(var j=0; j<wordlLat.length; j++) {
+                    worldPos.push({x: worldLong[j],y: wordlLat[j]});
+                }
+
+            Xvis=[{% for item in xvis %}
+                "{{ item }}",
+                {% endfor %}]
+
+            Yvis=[{% for item in yvis %}
+                "{{ item }}",
+                {% endfor %}]
+                visPos=[];
+                for(var j=0; j<wordlLat.length; j++) {
+                    visPos.push({x: Xvis[j],y: Yvis[j]});
+                }
+            const data = {
+              datasets: [     
+            {
+                label: 'User Visibility',
+                backgroundColor: 'black',
+                borderColor: 'black',
+                data: visPos,
+                pointRadius: 2,
+            },        
+            {
+                label: 'Actual Position',
+                backgroundColor: 'green',
+                borderColor: 'green',
+                data: [{x: long[0],y: lat[0]}],
+                pointRadius: 7,
+            },
+            {
+                label: 'Sat Position',
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: satPos,
+                pointRadius: 2,
+              },
+              {
+                label: 'User Position',
+                backgroundColor: 'yellow',
+                borderColor: 'yellow',
+                data: userLLA,
+                pointRadius: 5,
+              },
+              {
+                label: 'World',
+                backgroundColor: 'blue',
+                borderColor: 'blue',
+                data: worldPos,
+                pointRadius: 2,
+              }]
+            };
+          
+            const config = {
+              type: 'scatter',
+              data: data,
+              options: {
+                scales: {
+                    x: {
+                            max : 180,    
+                            min : -180,
+                        },
+                    y: {
+                            max : 90,    
+                            min : -90,
+                }}
+            }};
+            const myChart = new Chart(document.getElementById('myChart'),config);
+        </script>
+    </div>
+</body>
+</html>
