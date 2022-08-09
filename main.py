@@ -150,8 +150,8 @@ def satellite(catnr):
         print(name," has been inserted in DB")
 
     if sat is not None:
-        name=sat.name
-        if sat.epoch!=epoch:
+        name=sat["name"]
+        if sat["epoch"]!=epoch:
             id = { "noradID": catnr }
             newvalues = { "$set": { "epoch": epoch,"incl": incl,"ecc": ecc,"omega": omega,"w": w,"M":M,"n":n} }
             mongo_db.satellites.update_one(id,newvalues)
