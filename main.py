@@ -17,7 +17,7 @@ import requests
 
 
 load_dotenv() # use dotenv to hide sensitive credential as environment variables
-DATABASE_URL=f'mongodb+srv://MXapelli:sat2022'\
+DATABASE_URL=f'mongodb+srv://MXapelli:{os.environ.get("password")}'\
 	      '@mongo-heroku-cluster.aiiqhhv.mongodb.net/satellites?retryWrites=true&w=majority'# get connection url from environment
 
 client=pymongo.MongoClient(DATABASE_URL) # establish connection with database
@@ -46,6 +46,7 @@ async def get_sat_data(session, sat_id):
             satellites.append(result_data)
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) #Borrar esta linea para el deployment
 asyncio.run(main())
+cont=0
 for i in range(len(satellites)):
         for j in range(len(satellites[i])):
             noradID=int(satellites[i][j]['NORAD_CAT_ID'])
@@ -57,6 +58,8 @@ for i in range(len(satellites)):
             w=satellites[i][j]['ARG_OF_PERICENTER']
             M=satellites[i][j]['MEAN_ANOMALY']
             n=satellites[i][j]['MEAN_MOTION']
+            cont=cont+1
+            print(cont)
             
             fre=0
             if "ISS" in name:
@@ -386,7 +389,11 @@ def doppler(catnr):
 
     print ("Max Freq. Doppler: ", max(fDReal))
     print ("Max Speed ", max(vinstReal))
-    sat.update(vDoppler=fDReal)
+
+    id = { "noradID": catnr }
+    newvalues = { "$set": { "vDoppler": fDReal} }
+    mongo_db.satellites.update_one(id,newvalues)
+
     text=[("The maximum Doppler frequency for this satellite is: "+str(round(max(fDReal),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
     return render_template('doppler.html',entries=text,doppler=fDReal)
 
@@ -573,5 +580,5 @@ def jsonCheck(datosObtenidos):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8000, debug=True)
+    app.run()
  
