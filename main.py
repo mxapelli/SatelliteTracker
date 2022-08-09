@@ -1,8 +1,10 @@
 import os
 from time import time
 from flask import Flask, render_template, request
-from flask_sqlalchemy import SQLAlchemy
-from flask_mongoengine import MongoEngine
+from dotenv import load_dotenv
+import json
+import os
+import pymongo
 
 import time
 import calendar
@@ -14,47 +16,14 @@ import numpy
 import requests
 
 
+load_dotenv() # use dotenv to hide sensitive credential as environment variables
+DATABASE_URL=f'mongodb+srv://MXapelli:{os.environ.get("password")}'\
+	      '@mongo-heroku-cluster.aiiqhhv.mongodb.net/?retryWrites=true&w=majority'# get connection url from environment
+
+client=pymongo.MongoClient(DATABASE_URL) # establish connection with database
+mongo_db=client.db
+
 app = Flask(__name__)
-
-#MONGODB DATABASE
-app.config['MONGODB_SETTINGS'] = {
-    'db': 'your_database'
-}
-db = MongoEngine()
-db.init_app(app)
-
-class Satellite(db.Document):
-    noradID= db.IntField(required=True)
-    name = db.StringField()
-    epoch = db.StringField()
-    ecc=db.FloatField()
-    incl= db.FloatField()
-    omega= db.FloatField()
-    w=db.FloatField()
-    M= db.FloatField()
-    n= db.FloatField()
-    a= db.FloatField()
-    freq= db.FloatField()
-    xECEF= db.ListField()
-    yECEF= db.ListField()
-    zECEF= db.ListField()
-    vDoppler= db.ListField()
-    def to_json(self):
-        return {"noradID": self.noradID,
-                "name": self.name,
-                "epoch": self.epoch,
-                "ecc": self.ecc,
-                "incl": self.incl,
-                "omega": self.omega,
-                "w": self.w,
-                "M": self.M,
-                "n": self.n,
-                "a": self.a,
-                "freq": self.freq,
-                "xECEF": self.xECEF,
-                "yECEF": self.yECEF,
-                "zECEF": self.zECEF,
-                "vDoppler": self.vDoppler}
 
 satellites=[]
 constellations = ['GROUP=starlink',
@@ -99,10 +68,11 @@ for i in range(len(satellites)):
             elif "IRIDIUM" in name:
                 fre=1626.1042*10**6
             
-            sat = Satellite.objects(noradID=noradID).first()
+            sat=mongo_db.satellites.find_one({"noradID": noradID})
             if not sat and not "FALCON" in name:
-                sat = Satellite(noradID=noradID,name=name,epoch=epoch,incl=incl,omega=omega,ecc=ecc,w=w,M=M,n=n,freq=fre)
-                sat.save()
+                sat={"noradID": noradID, "name": name,"epoch": epoch,"ecc": ecc,"incl": incl,"omega": omega,"w": w,"M": M,
+                "n": n,"freq": fre,"xECEF": [],"yECEF": [],"zECEF": [],"vDoppler": []}
+                mongo_db.satellites.insert_one(sat)
 
 @app.route('/',methods = ['POST', 'GET'])
 def index():
@@ -122,9 +92,10 @@ def index():
         latUser=float(coords[0])
         longUser=float(coords[1])
         altUser=float(altM)
+
     jsonSat=[]
-    for sat in Satellite.objects:
-        jsonSat.append({"OBJECT_NAME": str(sat.name), "NORAD_CAT_ID": str(sat.noradID)})
+    for sat in mongo_db.satellites.find():
+        jsonSat.append({"OBJECT_NAME": str(sat["name"]), "NORAD_CAT_ID": str(sat["noradID"])})
 
     print(time.time()-start_time)
     print(satellites[0][0]['OBJECT_NAME']+str(satellites[0][0]['NORAD_CAT_ID']))
@@ -171,17 +142,12 @@ def satellite(catnr):
     elif "IRIDIUM" in name:
         fre=1626.1042*10**6
 
-    sat = Satellite.objects(noradID=catnr).first()
+    sat=mongo_db.satellites.find_one({"noradID": catnr})            
     if not sat and fre!=0:
-        sat = Satellite(noradID=catnr,name=name,epoch=epoch,incl=incl,omega=omega,ecc=ecc,w=w,M=M,n=n,freq=fre)
-        sat.save()
+        sat={"noradID": catnr, "name": name,"epoch": epoch,"ecc": ecc,"incl": incl,"omega": omega,"w": w,"M": M,
+                "n": n,"freq": fre,"xECEF": [],"yECEF": [],"zECEF": [],"vDoppler": []}
+        mongo_db.satellites.insert_one(sat)
         print(name," has been inserted in DB")
-
-    if sat is not None:
-        name=sat.name
-        if sat.epoch!=epoch:
-            sat.update(epoch=epoch,incl=incl,omega=omega,ecc=ecc,w=w,M=M,n=n)
-            print(name," has been updated")
 
 
     #TIME TO TOA
@@ -321,7 +287,9 @@ def satellite(catnr):
             worldLong.append(float(y[0]))
             worldLat.append(float(y[1]))
     
-    sat.update(a=a,xECEF=xmap,yECEF=ymap,zECEF=zmap)
+    id = { "noradID": catnr }
+    newvalues = { "$set": { "a": a,"xECEF": xmap,"yECEF": ymap,"zECEF": zmap } }
+    mongo_db.satellites.update_one(id,newvalues)
     atime=time.localtime()
     st=time.strftime("%a, %d %b %Y %H:%M:%S ",atime)
     text=[("You have selected the "+name+" satellite with Catalog Number: "+str(catnr)),("The local time is: " +st)]
@@ -330,12 +298,12 @@ def satellite(catnr):
 @app.route('/<int:catnr>/doppler')
 def doppler(catnr):
 
-    sat = Satellite.objects(noradID=catnr).first()
-    freq=sat.freq
-    xmap=sat.xECEF
-    ymap=sat.yECEF
-    zmap=sat.zECEF
-    a=sat.a
+    sat=mongo_db.satellites.find_one({"noradID": catnr})
+    freq=sat["freq"]
+    xmap=sat["xECEF"]
+    ymap=sat["yECEF"]
+    zmap=sat["zECEF"]
+    a=sat["a"]
     print("Frequency of satellite ",freq)
     r=(1-ecc)*a
     v=math.sqrt(Ge*Me*((2/r)-(1/a)))
