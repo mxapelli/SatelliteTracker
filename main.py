@@ -44,7 +44,7 @@ async def get_sat_data(session, sat_id):
         async with session.get(url) as response:
             result_data = await response.json()
             satellites.append(result_data)
-#asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) #Borrar esta linea para el deployment
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) #Borrar esta linea para el deployment
 asyncio.run(main())
 for i in range(len(satellites)):
         for j in range(len(satellites[i])):
