@@ -17,8 +17,8 @@ import requests
 
 
 load_dotenv() # use dotenv to hide sensitive credential as environment variables
-DATABASE_URL=f'mongodb+srv://MXapelli:{os.environ.get("password")}'\
-	      '@mongo-heroku-cluster.aiiqhhv.mongodb.net/?retryWrites=true&w=majority'# get connection url from environment
+DATABASE_URL=f'mongodb+srv://MXapelli:sat2022'\
+	      '@mongo-heroku-cluster.aiiqhhv.mongodb.net/satellites?retryWrites=true&w=majority'# get connection url from environment
 
 client=pymongo.MongoClient(DATABASE_URL) # establish connection with database
 mongo_db=client.db
@@ -143,11 +143,19 @@ def satellite(catnr):
         fre=1626.1042*10**6
 
     sat=mongo_db.satellites.find_one({"noradID": catnr})            
-    if not sat and fre!=0:
+    if sat is None and fre!=0:
         sat={"noradID": catnr, "name": name,"epoch": epoch,"ecc": ecc,"incl": incl,"omega": omega,"w": w,"M": M,
                 "n": n,"freq": fre,"xECEF": [],"yECEF": [],"zECEF": [],"vDoppler": []}
         mongo_db.satellites.insert_one(sat)
         print(name," has been inserted in DB")
+
+    if sat is not None:
+        name=sat.name
+        if sat.epoch!=epoch:
+            id = { "noradID": catnr }
+            newvalues = { "$set": { "epoch": epoch,"incl": incl,"ecc": ecc,"omega": omega,"w": w,"M":M,"n":n} }
+            mongo_db.satellites.update_one(id,newvalues)
+            print(name," has been updated")
 
 
     #TIME TO TOA
