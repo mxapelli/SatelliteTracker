@@ -315,6 +315,7 @@ def doppler(catnr):
     ymap=sat["yECEF"]
     zmap=sat["zECEF"]
     a=sat["a"]
+    ecc=sat["ecc"]
     print("Frequency of satellite ",freq)
     r=(1-ecc)*a
     v=math.sqrt(Ge*Me*((2/r)-(1/a)))
