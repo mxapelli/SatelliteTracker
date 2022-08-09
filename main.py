@@ -46,7 +46,7 @@ async def get_sat_data(session, sat_id):
             satellites.append(result_data)
 #asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) #Borrar esta linea para el deployment
 asyncio.run(main())
-cont=0
+"""cont=0
 for i in range(len(satellites)):
         for j in range(len(satellites[i])):
             noradID=int(satellites[i][j]['NORAD_CAT_ID'])
@@ -75,7 +75,7 @@ for i in range(len(satellites)):
             if not sat and not "FALCON" in name:
                 sat={"noradID": noradID, "name": name,"epoch": epoch,"ecc": ecc,"incl": incl,"omega": omega,"w": w,"M": M,
                 "n": n,"freq": fre,"xECEF": [],"yECEF": [],"zECEF": [],"vDoppler": []}
-                mongo_db.satellites.insert_one(sat)
+                mongo_db.satellites.insert_one(sat)"""
 
 @app.route('/',methods = ['POST', 'GET'])
 def index():
