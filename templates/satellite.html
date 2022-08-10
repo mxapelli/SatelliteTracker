@@ -16,6 +16,9 @@
     <div>
         <canvas id="myChart"></canvas>
         <script>
+            const pointImage=new Image(50,50)
+            pointImage.src= 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png'
+            //https://cdn-icons-png.flaticon.com/512/1679/1679957.png
             userLLA=[]
             userLLA.push({x: "{{userlong}}",y: "{{userlat}}"});
             long=[{% for item in longs %}
@@ -56,17 +59,18 @@
               datasets: [     
             {
                 label: 'User Visibility',
-                backgroundColor: 'black',
-                borderColor: 'black',
+                backgroundColor: 'rgb(49, 252, 83)',
+                borderColor: 'rgb(49, 252, 83)',
                 data: visPos,
-                pointRadius: 2,
+                pointRadius:2,
             },        
             {
                 label: 'Actual Position',
-                backgroundColor: 'green',
-                borderColor: 'green',
+                backgroundColor: 'black',
+                borderColor: 'black',
                 data: [{x: long[0],y: lat[0]}],
                 pointRadius: 7,
+                pointStyle: pointImage
             },
             {
                 label: 'Sat Position',
@@ -95,6 +99,14 @@
               type: 'scatter',
               data: data,
               options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            filter: item => {return item.text != "World"}
+                        }
+                    },
+                },
+                events: [],
                 scales: {
                     x: {
                             max : 180,    
