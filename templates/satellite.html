@@ -5,21 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Satellite</title>
     <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/04/Satellite-Download-PNG.png">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
     <style>
     body {
         background-color:#383A3F;
     }
     canvas {
-        background: blue;}
+        background: blue;
+    }
     p {
         color:white;
         font-size:12pt;
         font-family:arial,helvetica;
         padding-left: 20px;
       }
-
     h1 {
         color:white;
         padding-top: 15px;
@@ -32,32 +31,41 @@
     .btn {
         display: block;
         background:blue;
+        font-family:verdana,arial;
+        text-align: justify;
+        width: 100%;
+        height: 60%;
         color: white;
-        padding: 15px 20px;
-        margin: 20px 0;
+        margin: 20px 20px;
         border-radius: 5px;
         box-shadow: rgba(0,0,0,0.9);
         transition: all 200ms ease-in-out;
         text-decoration: none;
       }
-
+    .grid-container {
+        display: grid;
+        grid-template-columns: auto auto auto auto;
+        grid-gap: 10px;
+        padding: 10px;
+    }
+    .item1 {
+        grid-row: 1 / span 2;
+    }
     </style>
-
-
 </head>
 <body>
     <h1>Satellite</h1>
-    <div class="row">
-        <div class="col-xs-9 col-md-7">     
+    <div class="grid-container">
+        <div class="item1">
             {% for entry in entries %}
-               <p>{{ entry }}</p>
+            <p>{{ entry }}</p>
             {% endfor %}
         </div>
-        <div class="col-xs-3 col-md-5">
+        <div class="item2">
             <a href="{{number}}/doppler" class="btn">View Doppler Analysis</a>   
         </div>
     </div>
-        <canvas id="myChart"></canvas>
+    <canvas id="myChart"></canvas>
         <script>
             const pointImage=new Image(50,50)
             pointImage.src= 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png'
@@ -171,6 +179,5 @@
             }};
             const myChart = new Chart(document.getElementById('myChart'),config);
         </script>
-    </div>
 </body>
 </html>
