@@ -52,7 +52,7 @@
               const data = {
                 datasets: [             
               {
-                  label: 'Sat Position',
+                  label: 'Doppler Frequency',
                   backgroundColor: 'rgb(255, 99, 132)',
                   borderColor: 'rgb(255, 99, 132)',
                   data: Doppler,
@@ -73,12 +73,14 @@
                   },
                   scales: {
                     x: {
-                            ticks: { color: 'white'},
-                            grid: {color: 'white'}
+                      title: {text: 'Time',color: 'white', display: true, align: 'center', font: {size:15}},
+                      ticks: { color: 'white'},
+                      grid: {color: 'white'}
                         },
-                    y: {
-                            ticks: { color: 'white'},
-                            grid: {color: 'white'}
+                    y: {    
+                      title: {text: 'Doppler Freq.',color: 'white', display: true, align: 'center', font: {size:15}},
+                      ticks: { color: 'white'},
+                      grid: {color: 'white'}
                 }}
               }};
               const DopplerChart = new Chart(document.getElementById('DopplerChart'),config);
