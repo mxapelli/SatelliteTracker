@@ -64,6 +64,22 @@
                 type: 'scatter',
                 data: data,
                 options: {
+                  plugins: {
+                    legend: {
+                        labels: {
+                            color: "white",
+                        }
+                    },
+                  },
+                  scales: {
+                    x: {
+                            ticks: { color: 'white'},
+                            grid: {color: 'white'}
+                        },
+                    y: {
+                            ticks: { color: 'white'},
+                            grid: {color: 'white'}
+                }}
               }};
               const DopplerChart = new Chart(document.getElementById('DopplerChart'),config);
       </script>
