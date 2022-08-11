@@ -14,10 +14,22 @@
       }
       p {
         color:white;
+        font-size:1pt;
+      }
+
+      h4 {
+        color:white;
         font-size:12pt;
         font-family:verdana,arial;
-        padding-top: 15px;
         padding-left: 50px;
+        padding-top: 15px;
+      }
+      h5 {
+        color:white;
+        font-size:12pt;
+        font-family:verdana,arial;
+        padding-left: 50px;
+        padding-bottom: 15px;
       }
 
       h1 {
@@ -79,10 +91,10 @@
       getLocation();
     </script>
     <h1>Welcome to Satellite Tracker!</h1>
-    <p>You allow us to use your real Geolocation?</p>
+    <h4>You allow us to use your real Geolocation?</h4>
     <form action = "/" method = "post">
       <p><input type = "hidden" name="nm" id="demo"/></p>
-      <p><input type = "submit" value = "Yes" /></p>
+      <h5><input type = "submit" value = "Allow use of geolocation" class="btn"/></h5>
     </form> 
 
     <div class="container">

@@ -29,6 +29,17 @@
         text-decoration:underline;
         text-align:center;
       }
+    .btn {
+        display: block;
+        background:blue;
+        color: white;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 5px;
+        box-shadow: rgba(0,0,0,0.9);
+        transition: all 200ms ease-in-out;
+        text-decoration: none;
+      }
 
     </style>
 
@@ -36,11 +47,16 @@
 </head>
 <body>
     <h1>Satellite</h1>
-    {% for entry in entries %}
-       <p>{{ entry }}</p>
-    {% endfor %}
-    <a href="{{number}}/doppler" class="btn btn-primary">View Doppler Analysis</a>
-    <div>
+    <div class="row">
+        <div class="col-xs-9 col-md-7">     
+            {% for entry in entries %}
+               <p>{{ entry }}</p>
+            {% endfor %}
+        </div>
+        <div class="col-xs-3 col-md-5">
+            <a href="{{number}}/doppler" class="btn">View Doppler Analysis</a>   
+        </div>
+    </div>
         <canvas id="myChart"></canvas>
         <script>
             const pointImage=new Image(50,50)
