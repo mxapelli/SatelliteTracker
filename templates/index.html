@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/04/Satellite-Download-PNG.png">
     <style>
       body {
-        background-color:black;
+        background-color:#383A3F;
       }
       p {
         color:greenyellow;
@@ -28,13 +28,33 @@
         text-align:center;
         background-color:blue;
       }
-      h6 {
-        color:black;
+      h2 {
+        color:white;
         font-size:12pt;
         font-family:verdana,arial;
         text-decoration:underline;
         text-align:center;
-        background-color:blue;
+      }
+      h3 {
+        color:white;
+        font-size:10pt;
+        font-family:verdana,arial;
+        text-align:center;
+      }
+      .btn {
+        display: block;
+        background:blue;
+        color: white;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 5px;
+        box-shadow: rgba(0,0,0,0.9);
+        transition: all 200ms ease-in-out;
+        text-decoration: none;
+      }
+      .card {
+        background:#1F2124;
+        border-color: white;
       }
 
       </style>
@@ -70,9 +90,9 @@
                <!--Titulo: {{ sats['OBJECT_NAME']}}-->
                <div class="card">
                 <div class="card-body">
-                    <h6 class="card-title">{{ sats['OBJECT_NAME']}}</h6>
-                    <p class="card-text">{{ sats['NORAD_CAT_ID']}}</p>
-                    <a href="{{ sats['NORAD_CAT_ID']}}" class="btn btn-primary">View</a>
+                    <h2 class="card-title">{{ sats['OBJECT_NAME']}}</h2>
+                    <h3 class="card-text">Satellite ID: {{ sats['NORAD_CAT_ID']}}</h3>
+                    <a href="{{ sats['NORAD_CAT_ID']}}" class="btn">View</a>
                 </div>
                </div>
             </div>
