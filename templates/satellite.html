@@ -5,7 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Satellite</title>
     <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/04/Satellite-Download-PNG.png">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <style>
+    body {
+        background-color:black;
+
+    }
+    canvas {
+        padding-top: 10px;
+        background: blue;}
+    p {
+        color:white;
+        font-size:12pt;
+        font-family:arial,helvetica;
+      }
+
+    h1 {
+        color:white;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        font-size:36pt;
+        font-family:verdana,arial;
+        text-decoration:underline;
+        text-align:center;
+      }
+
+    </style>
+
+
 </head>
 <body>
     <h1>Satellite</h1>
@@ -19,6 +47,7 @@
             const pointImage=new Image(50,50)
             pointImage.src= 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png'
             //https://cdn-icons-png.flaticon.com/512/1679/1679957.png
+            
             userLLA=[]
             userLLA.push({x: "{{userlong}}",y: "{{userlat}}"});
             long=[{% for item in longs %}
@@ -59,8 +88,8 @@
               datasets: [     
             {
                 label: 'User Visibility',
-                backgroundColor: 'rgb(49, 252, 83)',
-                borderColor: 'rgb(49, 252, 83)',
+                backgroundColor: 'white',
+                borderColor: 'white',
                 data: visPos,
                 pointRadius:2,
             },        
@@ -84,12 +113,13 @@
                 backgroundColor: 'yellow',
                 borderColor: 'yellow',
                 data: userLLA,
-                pointRadius: 5,
+                pointRadius: 8,
+                pointStyle: "rectRot"
               },
               {
                 label: 'World',
-                backgroundColor: 'blue',
-                borderColor: 'blue',
+                backgroundColor: 'rgb(0, 225, 0)',
+                borderColor: 'rgb(0, 225, 0)',
                 data: worldPos,
                 pointRadius: 2,
               }]
@@ -102,7 +132,8 @@
                 plugins: {
                     legend: {
                         labels: {
-                            filter: item => {return item.text != "World"}
+                            filter: item => {return item.text != "World"},
+                            color: "white",
                         }
                     },
                 },
@@ -111,10 +142,14 @@
                     x: {
                             max : 180,    
                             min : -180,
+                            ticks: { color: 'white'},
+                            grid: {color: 'white'}
                         },
                     y: {
                             max : 90,    
                             min : -90,
+                            ticks: { color: 'white'},
+                            grid: {color: 'white'}
                 }}
             }};
             const myChart = new Chart(document.getElementById('myChart'),config);

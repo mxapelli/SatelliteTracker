@@ -1,0 +1,31 @@
+
+p  {
+ font-size : 12pt;
+ font-family : arial,helvetica;
+ font-weight : normal;
+}
+
+h1  {
+ font-size : 36pt;
+ font-family : verdana,arial;
+ text-decoration : underline;
+ text-align : center;
+ background-color : Teal;
+}
+
+td  {
+ font-size : 10pt;
+ font-family : verdana,arial;
+ text-align : center;
+ background-color : 666666;
+}
+
+body  {
+ background-color : #006600;
+ font-family : arial;
+ color : White;
+}
+
+canvas {
+    background: black;
+}

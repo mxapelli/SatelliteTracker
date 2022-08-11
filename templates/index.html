@@ -8,6 +8,36 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/04/Satellite-Download-PNG.png">
+    <style>
+      body {
+        background-color:black;
+      }
+      p {
+        color:greenyellow;
+        font-size:12pt;
+        font-family:arial,helvetica;
+      }
+
+      h1 {
+        color:white;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        font-size:36pt;
+        font-family:verdana,arial;
+        text-decoration:underline;
+        text-align:center;
+        background-color:blue;
+      }
+      h6 {
+        color:black;
+        font-size:12pt;
+        font-family:verdana,arial;
+        text-decoration:underline;
+        text-align:center;
+        background-color:blue;
+      }
+
+      </style>
   </head>
   <body>
     <script>
@@ -26,10 +56,9 @@
       }
       getLocation();
     </script>
-
+    <h1>Welcome to Satellite Tracker!</h1>
+    <p>You allow us to use your real Geolocation?</p>
     <form action = "/" method = "post">
-      <h1>Welcome to Satellite Tracker!</h1>
-      <p>You allow us to use your real Geolocation?</p>
       <p><input type = "hidden" name="nm" id="demo"/></p>
       <p><input type = "submit" value = "Yes" /></p>
     </form> 
@@ -37,10 +66,9 @@
     <div class="container">
         <div class="row">
             {% for sats in datos %}
-            <div class="col-md-4">
+            <div class="col-md-3">
                <!--Titulo: {{ sats['OBJECT_NAME']}}-->
                <div class="card">
-                <img class="card-img-top"  alt="10">
                 <div class="card-body">
                     <h6 class="card-title">{{ sats['OBJECT_NAME']}}</h6>
                     <p class="card-text">{{ sats['NORAD_CAT_ID']}}</p>

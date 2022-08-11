@@ -100,12 +100,11 @@ def index():
     for sat in mongo_db.satellites.find():
         jsonSat.append({"OBJECT_NAME": str(sat["name"]), "NORAD_CAT_ID": str(sat["noradID"])})
 
-    print(time.time()-start_time)
+    #print(time.time()-start_time)
     print(satellites[0][0]['OBJECT_NAME']+str(satellites[0][0]['NORAD_CAT_ID']))
     return render_template('index.html',datos=jsonSat)
 
-Ge = 6.67384*10**(-11)					#Gravitational constant
-Me = 5.972*10**24	
+
 incTime=30
 JD=0.0
 @app.route('/<int:catnr>')
@@ -114,11 +113,13 @@ def satellite(catnr):
     ymap=[]
     zmap=[]
     pi=math.pi
+    Ge = 6.67384*10**(-11)					#Gravitational constant
+    Me = 5.972*10**24	
 
     datosObtenidos=requests.get('https://celestrak.com/NORAD/elements/gp.php?CATNR='+str(catnr)+'&FORMAT=JSON')
     check=jsonCheck(datosObtenidos)
     if check=="error":
-        print("Error satelite inexistente")
+        print("Error satellite does not exist")
         return render_template('error.html')
     datosSat= datosObtenidos.json()
     print("The user has selected satellite: ",datosSat[0]['OBJECT_NAME'])
@@ -204,7 +205,6 @@ def satellite(catnr):
     Mo =  M* pi / 180                   #Mean anomaly at ToA [rad]
 
     #Visibility User
-    print("latuser ",latUser)
     visCoord=visibilidadObs(a,latUser,longUser,altUser);
     Xvis=visCoord[0]
     Yvis=visCoord[1]
@@ -308,6 +308,8 @@ def satellite(catnr):
 
 @app.route('/<int:catnr>/doppler')
 def doppler(catnr):
+    Ge = 6.67384*10**(-11)					#Gravitational constant
+    Me = 5.972*10**24	
 
     sat=mongo_db.satellites.find_one({"noradID": catnr})
     freq=sat["freq"]
