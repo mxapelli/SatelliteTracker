@@ -18,6 +18,7 @@
         color:white;
         font-size:12pt;
         font-family:arial,helvetica;
+        padding-left: 20px;
       }
 
     h1 {
@@ -142,13 +143,15 @@
                             max : 180,    
                             min : -180,
                             ticks: { color: 'white'},
-                            grid: {color: 'white'}
+                            grid: {color: 'white'},
+                            title: {text: 'Longitude',color: 'white', display: true, align: 'center', font: {size:15}},
                         },
                     y: {
                             max : 90,    
                             min : -90,
                             ticks: { color: 'white'},
-                            grid: {color: 'white'}
+                            grid: {color: 'white'},
+                            title: {text: 'Latitude',color: 'white', display: true, align: 'center', font: {size:15}},
                 }}
             }};
             const myChart = new Chart(document.getElementById('myChart'),config);
