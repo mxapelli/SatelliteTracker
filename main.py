@@ -401,17 +401,29 @@ def doppler(catnr):
     id = { "noradID": catnr }
     newvalues = { "$set": { "vDoppler": fDReal} }
     mongo_db.satellites.update_one(id,newvalues)
+
+    #New Polar Chart Visibility
     img = BytesIO()
-    r = numpy.arange(0, 2, 0.01)
-    theta = 2 * numpy.pi * r
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-    ax.plot(theta, r)
-    ax.set_rmax(2)
-    ax.set_rticks([80, 60, 40, 20])  # Less radial ticks
-    ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
-    ax.grid(True)
-    ax.set_title("A line plot on a polar axis", va='bottom')
-    ax.set_xticklabels(['E', '', 'W', '', 'S', '', 'E', ''])
+    # Compute areas and colors
+    N = 150
+    r = 2 * numpy.random.rand(N)
+    theta = 2 * numpy.pi * numpy.random.rand(N)
+    area = 200 * r**2
+    colors = theta
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='polar')
+    c = ax.scatter(theta, r, c=colors, s=area, cmap='hsv', alpha=0.75)
+    ax.set_title("Visibility", va='bottom')
+    ax.set_theta_zero_location('N')
+    ax.set_rlabel_position(-90)
+    ax.set_theta_direction(-1)  # theta increasing clockwise
+    ax.set_xticklabels(['N', '45','E', '135', 'S', '225', 'W', '315'])
+    ax.set_ylim(90, 0)
+    ax.set_yticklabels(['0','20','40','60','80'])
+    ax.set_yticks([0,20,40,60,80])
+    
+    
 
     plt.savefig(img, format='png')
     plt.close()
