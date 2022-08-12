@@ -13,6 +13,7 @@ idna==3.3
 itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.1
+matplotlib==3.5.1
 multidict==6.0.2
 numpy==1.23.1
 pymongo==4.2.0

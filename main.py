@@ -5,6 +5,11 @@ from dotenv import load_dotenv
 import json
 import os
 import pymongo
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
 import time
 import calendar
@@ -396,9 +401,26 @@ def doppler(catnr):
     id = { "noradID": catnr }
     newvalues = { "$set": { "vDoppler": fDReal} }
     mongo_db.satellites.update_one(id,newvalues)
+    img = BytesIO()
+    r = numpy.arange(0, 2, 0.01)
+    theta = 2 * numpy.pi * r
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    ax.plot(theta, r)
+    ax.set_rmax(2)
+    ax.set_rticks([80, 60, 40, 20])  # Less radial ticks
+    ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+    ax.grid(True)
+    ax.set_title("A line plot on a polar axis", va='bottom')
+    ax.set_xticklabels(['E', '', 'W', '', 'S', '', 'E', ''])
+
+    plt.savefig(img, format='png')
+    plt.close()
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode('utf8')
 
     text=[("The maximum Doppler frequency for this satellite is: "+str(round(max(fDReal),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
-    return render_template('doppler.html',entries=text,doppler=fDReal)
+    return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url)
+
 
 def GAST(esec):
     #Computes GAST [deg] at current time + esec [sec]
