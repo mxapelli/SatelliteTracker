@@ -36,6 +36,8 @@
             "Mapa_osm": osm
         };
 
+        var polygon = L.polygon([[51.509, -0.08],[51.503, 5],[41, 2]]).addTo(map);
+
         controlCapas = L.control.layers(baseMaps);
         controlCapas.addTo(map);
 
