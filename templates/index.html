@@ -79,6 +79,11 @@
   <body>
     <script>
       var x = document.getElementById("demo");
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      };
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
       }
