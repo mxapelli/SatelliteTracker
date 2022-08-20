@@ -36,6 +36,18 @@
                 for(var j=1; j<long.length; j++) {
                     satPos.push([lat[j], long[j]]);
                 }
+
+            Xvis=[{% for item in xvis %}
+                "{{ item }}",
+                {% endfor %}]
+
+            Yvis=[{% for item in yvis %}
+                "{{ item }}",
+                {% endfor %}]
+                visPos=[];
+                for(var j=0; j<Xvis.length; j++) {
+                    visPos.push([Yvis[j],Xvis[j]]);
+                }
             map = L.map('map').setView([11.6863, 1.8382], 2);
     
             esri = L.tileLayer(
@@ -56,7 +68,7 @@
                 "Mapa_osm": osm
             };
             
-            var polygon = L.polygon([[51.509, -0.08],[51.503, 5],[41, 2]]).addTo(map);
+            var polygon = L.polygon(visPos).addTo(map);
             var latlngs = [[45.51, -122.68],[37.77, -122.43],[34.04, -118.2]];
             var polyline = L.polyline(satPos, {color: 'red'}).addTo(map);
     
