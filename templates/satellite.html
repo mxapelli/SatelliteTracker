@@ -5,7 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Satellite</title>
     <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/04/Satellite-Download-PNG.png">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var map, osm, esri, terreno;
+        var controlCapas;
+        var controlEscala;
+    
+        var locations = [
+          ["LOCATION_1", 11.8166, 122.0942],
+          ["LOCATION_2", 11.9804, 121.9189],
+          ["LOCATION_3", 10.7202, 122.5621],
+          ["LOCATION_4", 11.3889, 122.6277],
+          ["LOCATION_5", 10.5929, 122.6325]];
+        
+        
+    
+        function init() {
+            userLLA=[]
+            userLLA.push(["{{userlong}}", "{{userlat}}"]);
+            long=[{% for item in longs %}
+                "{{ item }}",
+                {% endfor %}]
+
+            lat=[{% for item in lats %}
+                "{{ item }}",
+                {% endfor %}]
+                satPos=[];
+                for(var j=1; j<long.length; j++) {
+                    satPos.push([lat[j], long[j]]);
+                }
+            map = L.map('map').setView([11.6863, 1.8382], 2);
+    
+            esri = L.tileLayer(
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 6,
+                minZoom: 2,
+                attribution: 'Tiles © Esri',
+            }).addTo(map);
+    
+            osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 6,
+                minZoom: 2,
+                attribution: 'OSM'
+            });
+    
+            var baseMaps = {
+                "Orto_esri": esri,
+                "Mapa_osm": osm
+            };
+            
+            var polygon = L.polygon([[51.509, -0.08],[51.503, 5],[41, 2]]).addTo(map);
+            var latlngs = [[45.51, -122.68],[37.77, -122.43],[34.04, -118.2]];
+            var polyline = L.polyline(satPos, {color: 'red'}).addTo(map);
+    
+            controlCapas = L.control.layers(baseMaps);
+            controlCapas.addTo(map);
+    
+            controlEscala = L.control.scale();
+            controlEscala.addTo(map);
+            for (var i = 0; i < locations.length; i++) 
+            {marker = new L.marker([locations[i][1], locations[i][2]]).bindPopup(locations[i][0]).addTo(map);}
+        }
+    </script>
     <style>
     body {
         background-color:#383A3F;
@@ -51,9 +114,14 @@
     .item1 {
         grid-row: 1 / span 2;
     }
+    #map { 
+        width: 90%;
+        height: 900px;
+        box-shadow: 5px 5px 5px #888;
+    }
     </style>
 </head>
-<body>
+<body onLoad="init()">
     <h1>Satellite</h1>
     <div class="grid-container">
         <div class="item1">
@@ -84,6 +152,7 @@
                 for(var j=1; j<long.length; j++) {
                     satPos.push({x: long[j],y: lat[j]});
                 }
+
             wordlLat=[{% for item in worldLa %}
                 "{{ item }}",
                 {% endfor %}]
@@ -179,5 +248,7 @@
             }};
             const myChart = new Chart(document.getElementById('myChart'),config);
         </script>
+        <div id="map">
+        </div>
 </body>
 </html>
