@@ -79,9 +79,12 @@
   <body>
     <script>
       var x = document.getElementById("demo");
+      function error(err) {
+        console.warn(`ERROR(${err.code}): ${err.message}`);
+      }
       function getLocation() {
         if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(showPosition);
+          navigator.geolocation.getCurrentPosition(showPosition, error, options);
         } else {
           x.innerHTML = "Geolocation is not supported by this browser.";
         }

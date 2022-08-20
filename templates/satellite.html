@@ -24,7 +24,7 @@
     
         function init() {
             userLLA=[]
-            userLLA.push(["{{userlong}}", "{{userlat}}"]);
+            userLLA.push(["{{userlat}}", "{{userlong}}"]);
             long=[{% for item in longs %}
                 "{{ item }}",
                 {% endfor %}]
@@ -67,7 +67,8 @@
                 "Orto_esri": esri,
                 "Mapa_osm": osm
             };
-            
+
+            var marker = L.marker(userLLA[0]).bindPopup("User position: Lat: "+userLLA[0][0]+ " Long: "+userLLA[0][1]).addTo(map);
             var polygon = L.polygon(visPos).addTo(map);
             var latlngs = [[45.51, -122.68],[37.77, -122.43],[34.04, -118.2]];
             var polyline = L.polyline(satPos, {color: 'red'}).addTo(map);
@@ -77,8 +78,7 @@
     
             controlEscala = L.control.scale();
             controlEscala.addTo(map);
-            for (var i = 0; i < locations.length; i++) 
-            {marker = new L.marker([locations[i][1], locations[i][2]]).bindPopup(locations[i][0]).addTo(map);}
+            
         }
     </script>
     <style>
