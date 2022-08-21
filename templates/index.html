@@ -72,8 +72,19 @@
         border-color: white;
       }
       .col-md-3{
-        padding-bottom: 10px;
+        padding-top: 10px
       }
+      .search{
+        margin: 0 auto;
+        width: 30%;
+        background-color: blue;
+        color: white;
+        display: block;}
+
+        ::placeholder {
+          color: white;
+          opacity: 1; /* Firefox */
+        }
 
       </style>
   </head>
@@ -109,9 +120,7 @@
       <h5><input type = "submit" value = "Allow use of geolocation" class="btn"/></h5>
     </form> 
 
-    <form class="form-inline">
-      <input class="form-control mr-sm-2" id="filter" type="search" placeholder="Search" aria-label="Search" autocomplete="off">
-    </form>
+    <input class="search" id="filter" type="search" placeholder="Search" aria-label="Search" autocomplete="off">
 
     <div class="container">
         <div id="sat" class="row">
