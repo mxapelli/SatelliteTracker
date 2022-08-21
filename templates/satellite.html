@@ -13,15 +13,6 @@
         var controlCapas;
         var controlEscala;
     
-        var locations = [
-          ["LOCATION_1", 11.8166, 122.0942],
-          ["LOCATION_2", 11.9804, 121.9189],
-          ["LOCATION_3", 10.7202, 122.5621],
-          ["LOCATION_4", 11.3889, 122.6277],
-          ["LOCATION_5", 10.5929, 122.6325]];
-        
-        
-    
         function init() {
             userLLA=[]
             userLLA.push(["{{userlat}}", "{{userlong}}"]);
@@ -32,9 +23,21 @@
             lat=[{% for item in lats %}
                 "{{ item }}",
                 {% endfor %}]
-                satPos=[];
+                satPos1=[];
+                satPos2=[];
+                longProv=0;
+                newSat=0;
                 for(var j=1; j<long.length; j++) {
-                    satPos.push([lat[j], long[j]]);
+                    if  ((longProv>0) && (long[j]<0)){
+                        newSat=1;
+                    }
+                    if (newSat==1){
+                        satPos2.push([lat[j], long[j]]);
+                    }
+                    if (newSat==0){
+                        satPos1.push([lat[j], long[j]]);
+                    }
+                    longProv=long[j];
                 }
 
             Xvis=[{% for item in xvis %}
@@ -73,17 +76,17 @@
             };
 
             var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat: "+userLLA[0][0]+ " Long: "+userLLA[0][1]).addTo(map);
-            var markerSat = L.marker(satPos[0],{icon: satIcon}).bindPopup("Sat position: Lat: "+satPos[0][0]+ " Long: "+satPos[0][1]).addTo(map);
+            var markerSat = L.marker(satPos1[0],{icon: satIcon}).bindPopup("Sat position: Lat: "+satPos1[0][0]+ " Long: "+satPos1[0][1]).addTo(map);
             var polygon = L.polygon(visPos).addTo(map);
-            var latlngs = [[45.51, -122.68],[37.77, -122.43],[34.04, -118.2]];
-            var polyline = L.polyline(satPos, {color: 'red'}).addTo(map);
+            var polyline = L.polyline(satPos1, {color: 'red'}).addTo(map);
+            var polyline2 = L.polyline(satPos2, {color: 'red'}).addTo(map);
+
     
             controlCapas = L.control.layers(baseMaps);
             controlCapas.addTo(map);
     
             controlEscala = L.control.scale();
-            controlEscala.addTo(map);
-            
+            controlEscala.addTo(map);   
         }
     </script>
     <style>
