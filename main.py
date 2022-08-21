@@ -430,7 +430,7 @@ def doppler(catnr):
     img.seek(0)
     plot_url = base64.b64encode(img.getvalue()).decode('utf8')
 
-    text=[("The maximum Doppler frequency for this satellite is: "+str(round(max(fDReal),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
+    text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("The maximum Doppler frequency for this satellite is: "+str(round(max(fDReal),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
     return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url)
 
 

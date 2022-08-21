@@ -101,8 +101,12 @@
                 "Default": osm
             };
 
-            var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat: "+userLLA[0][0]+ " Long: "+userLLA[0][1]).addTo(map);
-            var markerSat = L.marker(satPos1[0],{icon: satIcon}).bindPopup("Sat position: Lat: "+satPos1[0][0]+ " Long: "+satPos1[0][1]).addTo(map);
+            var latUser = parseFloat(userLLA[0][0]).toFixed(2);
+            var longUser = parseFloat(userLLA[0][1]).toFixed(2);
+            var latSat=parseFloat(satPos1[0][0]).toFixed(2);
+            var longSat= parseFloat(satPos1[0][1]).toFixed(2);
+            var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
+            var markerSat = L.marker(satPos1[0],{icon: satIcon}).bindPopup("Sat position: Lat:"+latSat+" Long:"+longSat).addTo(map);
             var polygon = L.polygon(visPos).addTo(map);
             var polyline = L.polyline(satPos1, {color: 'red'}).addTo(map);
             var polyline2 = L.polyline(satPos2, {color: 'red'}).addTo(map);
@@ -164,6 +168,8 @@
         width: 68%;
         height: 850px;
         box-shadow: 5px 5px 5px #888;
+        margin: 0 auto;
+        display: block;
     }
     .legend {
         padding: 6px 8px;
