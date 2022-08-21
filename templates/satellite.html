@@ -60,6 +60,19 @@
             var bounds = L.latLngBounds(southWest, northEast);
             map = L.map('map',{maxBounds: bounds,
                 maxBoundsViscosity: 1.0}).setView([20, 1.8382], 2);
+                /*Legend specific*/
+                var legend = L.control({ position: "topleft" });
+                
+                legend.onAdd = function(map) {
+                    var div = L.DomUtil.create("div", "legend");
+                    div.innerHTML += '<i style="background: red"></i><span>Satellite Trajectory</span><br>';
+                    div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
+                    div.innerHTML += '<i style="background: black"></i><span>Satellite Position at plot time</span><br>';
+                    return div;
+                };
+                legend.addTo(map);
+
+            
 
     
             esri = L.tileLayer(
@@ -151,6 +164,21 @@
         width: 68%;
         height: 850px;
         box-shadow: 5px 5px 5px #888;
+    }
+    .legend {
+        padding: 6px 8px;
+        font: 14px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255, 255, 255, 0.3);
+        line-height: 24px;
+        color: black;
+    }
+    .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin: 0 8px 0 0;
+        opacity: 0.7;
     }
     </style>
 </head>
