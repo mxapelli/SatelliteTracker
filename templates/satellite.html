@@ -59,17 +59,17 @@
                 maxZoom: 6,
                 minZoom: 2,
                 attribution: 'Tiles © Esri',
-            }).addTo(map);
+            });
     
             osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 6,
                 minZoom: 2,
                 attribution: 'OSM'
-            });
+            }).addTo(map);
     
             var baseMaps = {
-                "Orto_esri": esri,
-                "Mapa_osm": osm
+                "Satellite": esri,
+                "Default": osm
             };
 
             var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat: "+userLLA[0][0]+ " Long: "+userLLA[0][1]).addTo(map);
