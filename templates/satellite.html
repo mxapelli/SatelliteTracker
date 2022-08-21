@@ -55,19 +55,32 @@
             var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
                 iconSize: [40, 40], // size of the icon
             });
-            map = L.map('map').setView([11.6863, 1.8382], 2);
+            var southWest = L.latLng(-89.98155760646617, -180),
+            northEast = L.latLng(89.99346179538875, 180);
+            var bounds = L.latLngBounds(southWest, northEast);
+            map = L.map('map',{maxBounds: bounds,
+                maxBoundsViscosity: 1.0}).setView([20, 1.8382], 2);
+
     
             esri = L.tileLayer(
                 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 6,
                 minZoom: 2,
                 attribution: 'Tiles © Esri',
+                noWrap: true,              //this is the crucial line!
+                bounds: [
+                    [-90, -180],
+                    [90, 180]]
             });
     
             osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 6,
                 minZoom: 2,
-                attribution: 'OSM'
+                attribution: 'OSM',
+                noWrap: true,              //this is the crucial line!
+                bounds: [
+                    [-90, -180],
+                    [90, 180]]
             }).addTo(map);
     
             var baseMaps = {
@@ -135,8 +148,8 @@
         grid-row: 1 / span 2;
     }
     #map { 
-        width: 90%;
-        height: 900px;
+        width: 68%;
+        height: 850px;
         box-shadow: 5px 5px 5px #888;
     }
     </style>
