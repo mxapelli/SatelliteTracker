@@ -423,8 +423,6 @@ def doppler(catnr):
     ax.set_yticklabels(['0','20','40','60','80'])
     ax.set_yticks([0,20,40,60,80])
     
-    
-
     plt.savefig(img, format='png')
     plt.close()
     img.seek(0)
