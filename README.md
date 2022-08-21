@@ -3,7 +3,7 @@
 
 ## About The Project
 
-Project built for my Final Degree Project at the Universitat Politecnica de Catalunya (UPC) in the Double Bachelor's Degree in Aerospace Systems Engineering and Network Engineering. Capable of showing the position of multiple satellites, during their full next orbit around the earth in a 2D map. Also capable of shwowing the observed Doppler effect and when and in which direction will the satellites will be visible for the user. Built entirely by Marc Xapelli with help of professor Juan José Olmos Bonafé. The backend was built in Python and the frontend in Javascript using Visual Studio Code, it uses a MongoDB database. It is deployed in Heroku. Deployed [here](https://satellite-tracker-eetac.herokuapp.com) 
+Project built for my Final Degree Project at the Universitat Politecnica de Catalunya (UPC) in the Double Bachelor's Degree in Aerospace Systems Engineering and Network Engineering. Capable of showing the position of multiple satellites, during their full next orbit around the earth in a 2D map. Also capable of shwowing the observed Doppler effect and when and in which direction will the satellites will be visible for the user. Built entirely by Marc Xapelli with help of professor Juan José Olmos Bonafé. The backend was built in Python and the frontend in Javascript using Visual Studio Code, it uses a MongoDB database. It is deployed in Heroku. To go to the website click[here](https://satellite-tracker-eetac.herokuapp.com). 
 
 ## User Guide
 
