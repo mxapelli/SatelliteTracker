@@ -196,8 +196,8 @@
             <p>{{ entry }}</p>
             {% endfor %}
         </div>
-        <div class="item2">
-            <a href="{{number}}/doppler" class="btn">View Doppler Analysis</a>   
+        <div class="item2" id="button" hidden>
+            <a href="{{number}}/doppler" class="btn">View Visibility Analysis</a>   
         </div>
     </div>
     <canvas id="myChart"></canvas>
@@ -315,7 +315,16 @@
             }};
             const myChart = new Chart(document.getElementById('myChart'),config);
         </script>
-        <div id="map">
-        </div>
+    <div id="map">
+    </div>
+    <script>
+          let element = document.getElementById("button");
+          vis="{{vis}}"
+          console.log(vis)
+      
+          if (vis==1) {
+            element.removeAttribute("hidden");
+          }
+      </script>
 </body>
 </html>

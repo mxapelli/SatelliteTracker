@@ -291,6 +291,24 @@ def satellite(catnr):
         t = t + incTime
         j=j+1
 
+    #Check Visibility of satellite
+    elev=[]
+    for i in range(len(xmap)):
+        satECEF=[xmap[i], ymap[i], zmap[i]]
+        userECEF=LLA2ECEF(latUser,longUser,altUser)
+        pointV=sub(satECEF,userECEF)
+        NED=ECEF2NED(pointV,latUser*pi/180,longUser*pi/180)
+        d=math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
+        alpha= math.asin((-NED[2])/d)*180/pi
+        if(alpha>=10):
+            elev.append(alpha)
+    if len(elev)>0:
+        vis=1
+    else:
+        vis=0
+
+
+    #Map values
     worldLat=[] 
     worldLong=[]
     f = open('world_110m.txt','r')
@@ -309,10 +327,11 @@ def satellite(catnr):
     atime=time.localtime()
     st=time.strftime("%a, %d %b %Y %H:%M:%S ",atime)
     text=[("You have selected the "+name+" satellite with Catalog Number: "+str(catnr)),("The local time is: " +st)]
-    return render_template('satellite.html',entries=text,longs=longmap,lats=latmap,worldLa=worldLat,worldLo=worldLong,number=str(catnr),userlat=latUser,userlong=longUser,xvis=Xvis,yvis=Yvis)
+    return render_template('satellite.html',entries=text,longs=longmap,lats=latmap,worldLa=worldLat,worldLo=worldLong,number=str(catnr),userlat=latUser,userlong=longUser,xvis=Xvis,yvis=Yvis,vis=vis)
 
 @app.route('/<int:catnr>/doppler')
 def doppler(catnr):
+    pi=math.pi
     Ge = 6.67384*10**(-11)					#Gravitational constant
     Me = 5.972*10**24	
 
@@ -402,18 +421,36 @@ def doppler(catnr):
     newvalues = { "$set": { "vDoppler": fDReal} }
     mongo_db.satellites.update_one(id,newvalues)
 
+
+    #Visibility of satellite
+    elev=[]
+    az=[]
+    ind=[]
+    for i in range(len(xmap)):
+        satECEF=[xmap[i], ymap[i], zmap[i]]
+        userECEF=LLA2ECEF(latUser,longUser,altUser)
+        pointV=sub(satECEF,userECEF)
+        NED=ECEF2NED(pointV,latUser*pi/180,longUser*pi/180)
+        d=math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
+        alpha= math.asin((-NED[2])/d)*180/pi
+        beta= math.atan2(NED[1],NED[0])*180/pi;
+        if(alpha>=10):
+            elev.append(alpha)
+            ind.append(i)
+            if beta<0:
+                az.append((beta+360)*pi/(180))
+            else:
+                az.append(beta*pi/180)
+
+            
+
+
     #New Polar Chart Visibility
     img = BytesIO()
-    # Compute areas and colors
-    N = 150
-    r = 2 * numpy.random.rand(N)
-    theta = 2 * numpy.pi * numpy.random.rand(N)
-    area = 200 * r**2
-    colors = theta
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='polar')
-    c = ax.scatter(theta, r, c=colors, s=area, cmap='hsv', alpha=0.75)
+    c = ax.scatter(az, elev, c='blue', s=100, alpha=0.75)
     ax.set_title("Visibility", va='bottom')
     ax.set_theta_zero_location('N')
     ax.set_rlabel_position(-90)
