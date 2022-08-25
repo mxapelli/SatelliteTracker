@@ -1,6 +1,6 @@
 import os
 from time import time
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 from dotenv import load_dotenv
 import json
 import os
@@ -30,12 +30,10 @@ mongo_db=client.db
 
 app = Flask(__name__)
 
+app.secret_key = 'secret-key'
 satellites=[]
 constellations = ['GROUP=starlink',
                       'GROUP=iridium-next', 'GROUP=gps-ops', 'CATNR=25544']
-latUser=41.2757116961354
-longUser=1.9872286269285848
-altUser=4
 async def main():
         async with aiohttp.ClientSession() as session:
             tasks = []
@@ -85,9 +83,6 @@ for i in range(len(satellites)):
 @app.route('/',methods = ['POST', 'GET'])
 def index():
     start_time=time.time()
-    global latUser
-    global longUser
-    global altUser
     if request.method == 'POST':
       coordsData = request.form['nm']
       print("Coordenadas ",coordsData)
@@ -97,9 +92,9 @@ def index():
         result = requests.get(urlAlt)
         alt=result.json()
         altM=alt["results"][0]['elevation']
-        latUser=float(coords[0])
-        longUser=float(coords[1])
-        altUser=float(altM)
+        session['latUser'] = float(coords[0])
+        session['longUser'] = float(coords[1])
+        session['altUser'] = float(altM)
 
     jsonSat=[]
     for sat in mongo_db.satellites.find():
@@ -119,7 +114,15 @@ def satellite(catnr):
     zmap=[]
     pi=math.pi
     Ge = 6.67384*10**(-11)					#Gravitational constant
-    Me = 5.972*10**24	
+    Me = 5.972*10**24
+    if 'latUser' in session:	
+        latUser=session['latUser']
+        longUser=session['longUser']
+        altUser=session['altUser']
+    else:
+        latUser = 41.2757116961354
+        longUser= 1.9872286269285848
+        altUser= 4
 
     datosObtenidos=requests.get('https://celestrak.com/NORAD/elements/gp.php?CATNR='+str(catnr)+'&FORMAT=JSON')
     check=jsonCheck(datosObtenidos)
@@ -326,6 +329,7 @@ def satellite(catnr):
     mongo_db.satellites.update_one(id,newvalues)
     atime=time.localtime()
     st=time.strftime("%a, %d %b %Y %H:%M:%S ",atime)
+    print ("session info",session)
     text=[("You have selected the "+name+" satellite with Catalog Number: "+str(catnr)),("The local time is: " +st)]
     return render_template('satellite.html',entries=text,longs=longmap,lats=latmap,worldLa=worldLat,worldLo=worldLong,number=str(catnr),userlat=latUser,userlong=longUser,xvis=Xvis,yvis=Yvis,vis=vis)
 
@@ -333,7 +337,15 @@ def satellite(catnr):
 def doppler(catnr):
     pi=math.pi
     Ge = 6.67384*10**(-11)					#Gravitational constant
-    Me = 5.972*10**24	
+    Me = 5.972*10**24
+    if 'latUser' in session:	
+        latUser=session['latUser']
+        longUser=session['longUser']
+        altUser=session['altUser']
+    else:
+        latUser = 41.2757116961354
+        longUser= 1.9872286269285848
+        altUser= 4
 
     sat=mongo_db.satellites.find_one({"noradID": catnr})
     freq=sat["freq"]
