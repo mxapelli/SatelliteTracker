@@ -22,7 +22,7 @@ import requests
 
 
 load_dotenv() # use dotenv to hide sensitive credential as environment variables
-DATABASE_URL=f'mongodb+srv://MXapelli:{os.environ.get("password")}'\
+DATABASE_URL=f'mongodb+srv://MXapelli:{os.environ.get("passwordDB")}'\
 	      '@mongo-heroku-cluster.aiiqhhv.mongodb.net/satellites?retryWrites=true&w=majority'# get connection url from environment
 
 client=pymongo.MongoClient(DATABASE_URL) # establish connection with database
@@ -30,7 +30,7 @@ mongo_db=client.db
 
 app = Flask(__name__)
 
-app.secret_key = 'secret-key'
+app.secret_key = os.environ.get("passwordSess")
 satellites=[]
 constellations = ['GROUP=starlink',
                       'GROUP=iridium-next', 'GROUP=gps-ops', 'CATNR=25544']
