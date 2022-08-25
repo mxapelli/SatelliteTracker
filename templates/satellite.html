@@ -195,6 +195,7 @@
             {% for entry in entries %}
             <p>{{ entry }}</p>
             {% endfor %}
+            <p id="visText">The satellite will not be visible during their next orbit!</p> 
         </div>
         <div class="item2" id="button" hidden>
             <a href="{{number}}/doppler" class="btn">View Visibility Analysis</a>   
@@ -319,11 +320,13 @@
     </div>
     <script>
           let element = document.getElementById("button");
+          let text = document.getElementById('visText');
           vis="{{vis}}"
           console.log(vis)
       
           if (vis==1) {
             element.removeAttribute("hidden");
+            text.hidden=true;
           }
       </script>
 </body>
