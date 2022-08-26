@@ -508,11 +508,12 @@ def doppler(catnr):
     ax.set_theta_zero_location('N')
     ax.set_rlabel_position(-90)
     ax.set_theta_direction(-1)  # theta increasing clockwise
-    ax.set_xticklabels(['N', '45','E', '135', 'S', '225', 'W', '315'],c='white')
+    ax.set_xticklabels(['N', '45','E', '135', 'S', '225', 'W', '315'],c='white',weight='bold')
     ax.set_ylim(90, 0)
     ax.set_yticklabels(['0','20','40','60','80'],color='white',weight='bold')
     ax.set_yticks([0,20,40,60,80])
     ax.set_facecolor((0, 0, 1))
+    ax.set_axisbelow(True)
     
     plt.savefig(img, format='png',bbox_inches = "tight")
     plt.close()
@@ -536,6 +537,7 @@ def doppler(catnr):
     ax.set_xticklabels(times,c='white',rotation = 90)
     ax.set_yticklabels(yticks,color='white')
     ax.set_facecolor((0, 0, 1))
+    ax.set_axisbelow(True)
     plt.savefig(img2, format='png',bbox_inches = "tight")
     plt.close()
     img2.seek(0)
