@@ -348,6 +348,7 @@ def doppler(catnr):
         altUser= 4
 
     sat=mongo_db.satellites.find_one({"noradID": catnr})
+    name=sat["name"]
     freq=sat["freq"]
     xmap=sat["xECEF"]
     ymap=sat["yECEF"]
@@ -454,47 +455,68 @@ def doppler(catnr):
             else:
                 az.append(beta*pi/180)
 
-            
+    dopplerVis=[]
+    timeP=[]
+    cat=[]
+    c=0
+    catN=0
+    for i in range(len(ind)):
+        dopplerVis.append(fDReal[ind[i]])
+        timeP.append(ind[i]*incTime)
+        if (c!=ind[i]-1 and c!=0):
+            catN=1
+        cat.append(catN)
+        c=ind[i]
+
 
 
     #New Polar Chart Visibility
     img = BytesIO()
+    colormap = numpy.array(['lime','red'])
 
-    fig = plt.figure()
+    fig = plt.figure(facecolor='#383A3F')
     ax = fig.add_subplot(projection='polar')
-    c = ax.scatter(az, elev, c='blue', s=100, alpha=0.75)
-    ax.set_title("Visibility", va='bottom')
+    c = ax.scatter(az, elev, c=colormap[cat], s=20, alpha=0.75)
+    ax.set_title("Visibility of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
     ax.set_theta_zero_location('N')
+    ax.grid(c='white')
     ax.set_rlabel_position(-90)
     ax.set_theta_direction(-1)  # theta increasing clockwise
-    ax.set_xticklabels(['N', '45','E', '135', 'S', '225', 'W', '315'])
+    ax.set_xticklabels(['N', '45','E', '135', 'S', '225', 'W', '315'],c='white')
     ax.set_ylim(90, 0)
-    ax.set_yticklabels(['0','20','40','60','80'])
+    ax.set_yticklabels(['0','20','40','60','80'],color='white',weight='bold')
     ax.set_yticks([0,20,40,60,80])
+    ax.set_facecolor((0, 0, 1))
     
-    plt.savefig(img, format='png')
+    plt.savefig(img, format='png',bbox_inches = "tight")
     plt.close()
     img.seek(0)
     plot_url = base64.b64encode(img.getvalue()).decode('utf8')
 
 
     img2 = BytesIO()
-    timeP=[]
-    for n in range(len(fDReal)):
-        timeP.append(n)
-    fig,ax = plt.subplots()
-    ax.scatter(timeP, fDReal, c='red', s=100, alpha=0.75)
-    ax.set_title("Doppler frequency", va='bottom') 
-    plt.savefig(img2, format='png')
+        
+    fig,ax = plt.subplots(facecolor='#383A3F')
+    ax.scatter(timeP, dopplerVis, c=colormap[cat], s=30, alpha=0.75)
+    ax.set_title("Doppler frequency of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
+    ax.set_xlabel('Time (s)',c='white')  # Add an x-label to the axes.
+    ax.set_ylabel('Doppler Frequency (Hz)',c='white')  # Add a y-label to the axes
+    # setting ticks for y-axis
+    xticks=numpy.arange(0, timeP[-1], step=timeP[-1]/10)
+    ymax=(round(max(dopplerVis)/1000)*1000)+1000
+    yticks=numpy.arange(-ymax, ymax, step=ymax/4)
+    ax.set_xticks(xticks,c='white')
+    ax.set_xticklabels(xticks,c='white')
+    ax.set_yticklabels(yticks,color='white')
+    ax.grid(c='white')
+    ax.set_facecolor((0, 0, 1))
+    plt.savefig(img2, format='png',bbox_inches = "tight")
     plt.close()
     img2.seek(0)
     plotDoppler_url = base64.b64encode(img2.getvalue()).decode('utf8')
-    
-
 
     text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("The maximum Doppler frequency for this satellite is: "+str(round(max(fDReal),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
     return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url,plotDoppler_url=plotDoppler_url)
-
 
 def GAST(esec):
     #Computes GAST [deg] at current time + esec [sec]
