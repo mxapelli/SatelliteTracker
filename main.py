@@ -10,6 +10,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+from datetime import datetime,timedelta
 
 import time
 import calendar
@@ -329,7 +330,10 @@ def satellite(catnr):
     mongo_db.satellites.update_one(id,newvalues)
     atime=time.localtime()
     st=time.strftime("%a, %d %b %Y %H:%M:%S ",atime)
-    print ("session info",session)
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    session['time']=dt_string
+    print ("session info",dt_string)
     text=[("You have selected the "+name+" satellite with Catalog Number: "+str(catnr)),("The local time is: " +st)]
     return render_template('satellite.html',entries=text,longs=longmap,lats=latmap,worldLa=worldLat,worldLo=worldLong,number=str(catnr),userlat=latUser,userlong=longUser,xvis=Xvis,yvis=Yvis,vis=vis)
 
@@ -469,6 +473,28 @@ def doppler(catnr):
         c=ind[i]
 
 
+    actual_time = session['time']
+    init=timeP[0]
+    fin = timeP[-1]
+    duration=(fin-init)/7
+
+    #I convert the strings to datetime obj
+    actual_time_obj = datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')
+    times=[]
+    for i in range(8):
+        t=init+duration*(i)
+        time_obj=actual_time_obj + timedelta(seconds=t)
+        timeText=str(time_obj).split()
+        timev=timeText[1].split('.')
+        times.append(timev[0])
+
+    init_time = actual_time_obj + timedelta(seconds=init)
+    fin_time=actual_time_obj+timedelta(seconds=fin)
+    print(init_time)
+    print(fin_time)
+    print(times)
+
+
 
     #New Polar Chart Visibility
     img = BytesIO()
@@ -476,10 +502,10 @@ def doppler(catnr):
 
     fig = plt.figure(facecolor='#383A3F')
     ax = fig.add_subplot(projection='polar')
+    ax.grid(c='white')
     c = ax.scatter(az, elev, c=colormap[cat], s=20, alpha=0.75)
     ax.set_title("Visibility of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
     ax.set_theta_zero_location('N')
-    ax.grid(c='white')
     ax.set_rlabel_position(-90)
     ax.set_theta_direction(-1)  # theta increasing clockwise
     ax.set_xticklabels(['N', '45','E', '135', 'S', '225', 'W', '315'],c='white')
@@ -497,18 +523,18 @@ def doppler(catnr):
     img2 = BytesIO()
         
     fig,ax = plt.subplots(facecolor='#383A3F')
+    ax.grid(c='white')
     ax.scatter(timeP, dopplerVis, c=colormap[cat], s=30, alpha=0.75)
     ax.set_title("Doppler frequency of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
     ax.set_xlabel('Time (s)',c='white')  # Add an x-label to the axes.
     ax.set_ylabel('Doppler Frequency (Hz)',c='white')  # Add a y-label to the axes
     # setting ticks for y-axis
-    xticks=numpy.arange(0, timeP[-1], step=timeP[-1]/10)
+    xticks=numpy.arange(init, fin+duration, step=duration)
     ymax=(round(max(dopplerVis)/1000)*1000)+1000
     yticks=numpy.arange(-ymax, ymax, step=ymax/4)
     ax.set_xticks(xticks,c='white')
-    ax.set_xticklabels(xticks,c='white')
+    ax.set_xticklabels(times,c='white',rotation = 90)
     ax.set_yticklabels(yticks,color='white')
-    ax.grid(c='white')
     ax.set_facecolor((0, 0, 1))
     plt.savefig(img2, format='png',bbox_inches = "tight")
     plt.close()
