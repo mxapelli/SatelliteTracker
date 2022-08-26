@@ -477,8 +477,23 @@ def doppler(catnr):
     img.seek(0)
     plot_url = base64.b64encode(img.getvalue()).decode('utf8')
 
+
+    img2 = BytesIO()
+    timeP=[]
+    for n in range(len(fDReal)):
+        timeP.append(n)
+    fig,ax = plt.subplots()
+    ax.scatter(timeP, fDReal, c='red', s=100, alpha=0.75)
+    ax.set_title("Doppler frequency", va='bottom') 
+    plt.savefig(img2, format='png')
+    plt.close()
+    img2.seek(0)
+    plotDoppler_url = base64.b64encode(img2.getvalue()).decode('utf8')
+    
+
+
     text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("The maximum Doppler frequency for this satellite is: "+str(round(max(fDReal),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
-    return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url)
+    return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url,plotDoppler_url=plotDoppler_url)
 
 
 def GAST(esec):
