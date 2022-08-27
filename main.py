@@ -477,6 +477,8 @@ def doppler(catnr):
         c=ind[i]
 
     actual_time = session['time']
+    if len(timeP)<1:
+        return  render_template('errorDoppler.html')
     init=timeP[0]
     fin = timeP[-1]
     duration=(fin-init)/7
@@ -492,16 +494,16 @@ def doppler(catnr):
         timev=timeText[1].split('.')
         times.append(timev[0])
         if (i==0):
-            days.append(time_obj.strftime("%d %b %Y"))
+            days.append(time_obj.strftime("%d %b"))
     
     
     visStep=[]
     visStep.append(times[0])
     if len(change)>0:
         fin1 = actual_time_obj + timedelta(seconds=change[0])
-        days.append(fin1.strftime("%d %b %Y"))
+        days.append(fin1.strftime("%d %b"))
         in2=actual_time_obj+timedelta(seconds=change[1])
-        days.append(in2.strftime("%d %b %Y"))
+        days.append(in2.strftime("%d %b"))
         timeText=str(fin1).split()
         timev=timeText[1].split('.')
         visStep.append(timev[0])
@@ -510,7 +512,7 @@ def doppler(catnr):
         visStep.append(timev[0])
     visStep.append(times[-1])
     fin2 = actual_time_obj + timedelta(seconds=fin)
-    days.append(fin2.strftime("%d %b %Y"))
+    days.append(fin2.strftime("%d %b"))
     visText="The satellite will be visible from "+visStep[0]+" ("+days[0]+") "+" to "+ visStep[1]+" ("+days[1]+") "
     if len(visStep)>2:
         visText=visText+ " and from "+visStep[2]+" ("+days[2]+") "+"to "+ visStep[3]+" ("+days[3]+")"+"."
