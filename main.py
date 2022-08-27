@@ -498,12 +498,12 @@ def doppler(catnr):
 
     #New Polar Chart Visibility
     img = BytesIO()
-    colormap = numpy.array(['lime','red'])
+    colormap = numpy.array(['yellow','red'])
 
     fig = plt.figure(facecolor='#383A3F')
     ax = fig.add_subplot(projection='polar')
     ax.grid(c='white')
-    c = ax.scatter(az, elev, c=colormap[cat], s=20, alpha=0.75)
+    c = ax.scatter(az, elev, c=colormap[cat], s=30, alpha=1)
     ax.set_title("Visibility of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
     ax.set_theta_zero_location('N')
     ax.set_rlabel_position(-90)
@@ -525,19 +525,24 @@ def doppler(catnr):
         
     fig,ax = plt.subplots(facecolor='#383A3F')
     ax.grid(c='white')
-    ax.scatter(timeP, dopplerVis, c=colormap[cat], s=30, alpha=0.75)
+    ax.scatter(timeP, dopplerVis, c=colormap[cat], s=40, alpha=1)
     ax.set_title("Doppler frequency of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
     ax.set_xlabel('Time (s)',c='white')  # Add an x-label to the axes.
-    ax.set_ylabel('Doppler Frequency (Hz)',c='white')  # Add a y-label to the axes
+    
     # setting ticks for y-axis
     xticks=numpy.arange(init, fin+1, step=duration)
-    print(xticks)
-    print(times)
-    ymax=(round(max(dopplerVis)/1000)*1000)+1000
-    yticks=numpy.arange(-ymax, ymax, step=ymax/4)
+    
+
     ax.set_xticks(xticks,c='white')
     ax.set_xticklabels(times,c='white',rotation = 90)
-    ax.set_yticklabels(yticks,color='white')
+
+    yticks=ax.get_yticks()
+    yticklabel=[]
+    for i in range(len(yticks)):
+        yticklabel.append(yticks[i]/1000)
+
+    ax.set_ylabel('Doppler Frequency (kHz)',c='white')  # Add a y-label to the axes
+    ax.set_yticklabels(yticklabel,color='white')
     ax.set_facecolor((0, 0, 1))
     ax.set_axisbelow(True)
     plt.savefig(img2, format='png',bbox_inches = "tight")
