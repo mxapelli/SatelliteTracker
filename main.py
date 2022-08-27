@@ -464,36 +464,57 @@ def doppler(catnr):
     cat=[]
     c=0
     catN=0
+    change=[]
     for i in range(len(ind)):
         dopplerVis.append(fDReal[ind[i]])
         timeP.append(ind[i]*incTime)
         if (c!=ind[i]-1 and c!=0):
             catN=1
+            #To detect visibility changes
+            change.append(ind[i-1]*incTime)
+            change.append(ind[i]*incTime)
         cat.append(catN)
         c=ind[i]
-
 
     actual_time = session['time']
     init=timeP[0]
     fin = timeP[-1]
     duration=(fin-init)/7
 
-    #I convert the strings to datetime obj
+    #It convert the strings to datetime obj
     actual_time_obj = datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')
     times=[]
+    days=[]
     for i in range(8):
         t=init+duration*(i)
         time_obj=actual_time_obj + timedelta(seconds=t)
         timeText=str(time_obj).split()
         timev=timeText[1].split('.')
         times.append(timev[0])
+        if (i==0):
+            days.append(time_obj.strftime("%d %b %Y"))
     
-    init_time = actual_time_obj + timedelta(seconds=init)
-    fin_time=actual_time_obj+timedelta(seconds=fin)
-    print(init_time)
-    print(fin_time)
-    print(times)
-
+    
+    visStep=[]
+    visStep.append(times[0])
+    if len(change)>0:
+        fin1 = actual_time_obj + timedelta(seconds=change[0])
+        days.append(fin1.strftime("%d %b %Y"))
+        in2=actual_time_obj+timedelta(seconds=change[1])
+        days.append(in2.strftime("%d %b %Y"))
+        timeText=str(fin1).split()
+        timev=timeText[1].split('.')
+        visStep.append(timev[0])
+        timeText=str(in2).split()
+        timev=timeText[1].split('.')
+        visStep.append(timev[0])
+    visStep.append(times[-1])
+    fin2 = actual_time_obj + timedelta(seconds=fin)
+    days.append(fin2.strftime("%d %b %Y"))
+    visText="The satellite will be visible from "+visStep[0]+" ("+days[0]+") "+" to "+ visStep[1]+" ("+days[1]+") "
+    if len(visStep)>2:
+        visText=visText+ " and from "+visStep[2]+" ("+days[2]+") "+"to "+ visStep[3]+" ("+days[3]+")"+"."
+    
 
 
     #New Polar Chart Visibility
@@ -547,7 +568,7 @@ def doppler(catnr):
     img2.seek(0)
     plotDoppler_url = base64.b64encode(img2.getvalue()).decode('utf8')
 
-    text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("Max Doppler frequency: "+str(round(max(dopplerVis)/1000,2))+" kHz"),("Min Doppler frequency: "+str(round(min(dopplerVis)/1000,2))+" kHz"),("Max radial speed: " +str(round(max(vinstReal),2))+ " m/s")]
+    text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("Max Doppler frequency: "+str(round(max(dopplerVis)/1000,2))+" kHz"),("Min Doppler frequency: "+str(round(min(dopplerVis)/1000,2))+" kHz"),("Max radial speed: " +str(round(max(vinstReal),2))+ " m/s"),(visText)]
     return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url,plotDoppler_url=plotDoppler_url)
 
 def GAST(esec):
