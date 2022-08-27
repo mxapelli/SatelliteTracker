@@ -487,7 +487,7 @@ def doppler(catnr):
         timeText=str(time_obj).split()
         timev=timeText[1].split('.')
         times.append(timev[0])
-
+    
     init_time = actual_time_obj + timedelta(seconds=init)
     fin_time=actual_time_obj+timedelta(seconds=fin)
     print(init_time)
@@ -530,7 +530,9 @@ def doppler(catnr):
     ax.set_xlabel('Time (s)',c='white')  # Add an x-label to the axes.
     ax.set_ylabel('Doppler Frequency (Hz)',c='white')  # Add a y-label to the axes
     # setting ticks for y-axis
-    xticks=numpy.arange(init, fin+duration, step=duration)
+    xticks=numpy.arange(init, fin+1, step=duration)
+    print(xticks)
+    print(times)
     ymax=(round(max(dopplerVis)/1000)*1000)+1000
     yticks=numpy.arange(-ymax, ymax, step=ymax/4)
     ax.set_xticks(xticks,c='white')
@@ -543,7 +545,7 @@ def doppler(catnr):
     img2.seek(0)
     plotDoppler_url = base64.b64encode(img2.getvalue()).decode('utf8')
 
-    text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("The maximum Doppler frequency for this satellite is: "+str(round(max(fDReal),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
+    text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("The maximum Doppler frequency for this satellite is: "+str(round(max(dopplerVis),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
     return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url,plotDoppler_url=plotDoppler_url)
 
 def GAST(esec):
