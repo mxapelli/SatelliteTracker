@@ -528,14 +528,11 @@ def doppler(catnr):
     ax.scatter(timeP, dopplerVis, c=colormap[cat], s=40, alpha=1)
     ax.set_title("Doppler frequency of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
     ax.set_xlabel('Time (s)',c='white')  # Add an x-label to the axes.
-    
-    # setting ticks for y-axis
     xticks=numpy.arange(init, fin+1, step=duration)
-    
-
     ax.set_xticks(xticks,c='white')
     ax.set_xticklabels(times,c='white',rotation = 90)
 
+    # setting ticks for y-axis
     yticks=ax.get_yticks()
     yticklabel=[]
     for i in range(len(yticks)):
@@ -550,7 +547,7 @@ def doppler(catnr):
     img2.seek(0)
     plotDoppler_url = base64.b64encode(img2.getvalue()).decode('utf8')
 
-    text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("The maximum Doppler frequency for this satellite is: "+str(round(max(dopplerVis),2))+" Hz"),("The maximum speed is: " +str(round(max(vinstReal),2))+ " m/s")]
+    text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("Max Doppler frequency: "+str(round(max(dopplerVis)/1000,2))+" kHz"),("Min Doppler frequency: "+str(round(min(dopplerVis)/1000,2))+" kHz"),("Max radial speed: " +str(round(max(vinstReal),2))+ " m/s")]
     return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url,plotDoppler_url=plotDoppler_url)
 
 def GAST(esec):
