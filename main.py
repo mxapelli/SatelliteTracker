@@ -857,7 +857,7 @@ def visibilidadObs(a,latObs,longObs,altObs):
             longvis.append(longV)
             j=j+1
     #Generació elipse visibilitat
-    a=abs(longvis[len(longvis)-1]-longvis[0])/2
+    a=(abs(longvis[len(longvis)-1]-longvis[0])/2)*0.925
     b=abs(latvis[len(latvis)-1]-latvis[0])/2
     x0 = longObs
     y0 = latObs
