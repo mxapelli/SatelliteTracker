@@ -131,8 +131,26 @@ def satellite(catnr):
         print("Error satellite does not exist")
         return render_template('error.html')
     datosSat= datosObtenidos.json()
-    print("The user has selected satellite: ",datosSat[0]['OBJECT_NAME'])
-    name=datosSat[0]['OBJECT_NAME']
+
+    sat=mongo_db.satellites.find_one({"noradID": catnr})
+    if sat is not None:
+        name=sat["name"]
+    else:
+        name=datosSat[0]['OBJECT_NAME']
+
+    fre=0
+    if "ISS" in name:
+        fre=145.8*10**6
+    elif "STARLINK" in name:
+        fre=10950*10**6
+    elif "NAVSTAR" in name:
+        fre=1575.42*10**6
+    elif "IRIDIUM" in name:
+        fre=1626.1042*10**6
+    else:
+        return render_template('errorFrequency.html')
+
+    print("The user has selected satellite: ",name)
     epoch=datosSat[0]['EPOCH']
     epochT=str(epoch).split("T")
     epochT[1]=epochT[1].split(".")
@@ -144,17 +162,7 @@ def satellite(catnr):
     M=datosSat[0]['MEAN_ANOMALY']
     n=datosSat[0]['MEAN_MOTION']
 
-    fre=0
-    if "ISS" in name:
-        fre=145.8*10**6
-    elif "STARLINK" in name:
-        fre=10950*10**6
-    elif "NAVSTAR" in name:
-        fre=1575.42*10**6
-    elif "IRIDIUM" in name:
-        fre=1626.1042*10**6
-
-    sat=mongo_db.satellites.find_one({"noradID": catnr})            
+          
     if sat is None and fre!=0:
         sat={"noradID": catnr, "name": name,"epoch": epoch,"ecc": ecc,"incl": incl,"omega": omega,"w": w,"M": M,
                 "n": n,"freq": fre,"xECEF": [],"yECEF": [],"zECEF": [],"vDoppler": []}
@@ -262,7 +270,7 @@ def doppler(catnr):
         altUser= 4
 
     sat=mongo_db.satellites.find_one({"noradID": catnr})
-    if not (sat):
+    if sat is None:
         return render_template('error.html')
     name=sat["name"]
     freq=sat["freq"]
