@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 from datetime import datetime,timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
 
 import time
 import calendar
@@ -578,6 +579,94 @@ def doppler(catnr):
     text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("Max Doppler frequency: "+str(round(max(dopplerVis)/1000,2))+" kHz"),("Min Doppler frequency: "+str(round(min(dopplerVis)/1000,2))+" kHz"),("Max radial speed: " +str(round(max(vinstReal),2))+ " m/s"),(visText)]
     return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url,plotDoppler_url=plotDoppler_url)
 
+def test_job():
+    satsDB=[]
+    satsCelestrak=[]
+    start_time=time.time()
+    sats=mongo_db.satellites.find()
+    for i in sats:
+        satsDB.append(i)
+    
+    constellations = ['GROUP=starlink','GROUP=iridium-next', 'GROUP=gps-ops', 'CATNR=25544','GROUP=iridium']
+    for i in range(len(constellations)):
+        result_data=requests.get('https://celestrak.com/NORAD/elements/gp.php?'+constellations[i]+'&FORMAT=JSON')
+        satsCelestrak.append(result_data.json())
+
+    for sat in satsDB:
+        catnr=sat['noradID']
+        name=sat['name']
+        found=0
+        while found==0:
+            for i in range(len(satsCelestrak)):
+                for j in range(len(satsCelestrak[i])):
+                    noradID=int(satsCelestrak[i][j]['NORAD_CAT_ID'])
+                    epoch=satsCelestrak[i][j]['EPOCH']
+                    if (catnr==noradID):
+                        if "IRIDIUM" in name:
+                            name=name.strip("[-]")
+                        if sat['epoch']!=epoch:
+                            incl=satsCelestrak[i][j]['INCLINATION']
+                            omega=satsCelestrak[i][j]['RA_OF_ASC_NODE']
+                            ecc=satsCelestrak[i][j]['ECCENTRICITY']
+                            w=satsCelestrak[i][j]['ARG_OF_PERICENTER']
+                            M=satsCelestrak[i][j]['MEAN_ANOMALY']
+                            n=satsCelestrak[i][j]['MEAN_MOTION']
+                            id = { "noradID": catnr }
+                            newvalues = { "$set": { "epoch": epoch,"incl": incl,"ecc": ecc,"omega": omega,"w": w,"M":M,"n":n} }
+                            mongo_db.satellites.update_one(id,newvalues)
+                            print(name," has been updated")
+                        del satsCelestrak[i][j]
+                        break
+            found=1
+    print("Updated Completed")
+
+    #Cleaning list of sats
+    i=0
+    while i<(len(satsCelestrak)-1):
+        if len(satsCelestrak[i])==0:
+            del satsCelestrak[i]
+            i=i-1
+        i=i+1
+
+    #Adding new satellites
+    for i in range(len(satsCelestrak)):
+        for j in range(len(satsCelestrak[i])):
+            name=satsCelestrak[i][j]['OBJECT_NAME']
+            catnr=int(satsCelestrak[i][j]['NORAD_CAT_ID'])
+            epoch=satsCelestrak[i][j]['EPOCH']
+            incl=satsCelestrak[i][j]['INCLINATION']
+            omega=satsCelestrak[i][j]['RA_OF_ASC_NODE']
+            ecc=satsCelestrak[i][j]['ECCENTRICITY']
+            w=satsCelestrak[i][j]['ARG_OF_PERICENTER']
+            M=satsCelestrak[i][j]['MEAN_ANOMALY']
+            n=satsCelestrak[i][j]['MEAN_MOTION']
+
+            fre=0
+            if "ISS" in name:
+                fre=145.8*10**6
+            elif "STARLINK" in name:
+                fre=10950*10**6
+            elif "NAVSTAR" in name:
+                fre=1575.42*10**6
+            elif "IRIDIUM" in name:
+                fre=1626.1042*10**6
+            elif "GPS" in name:
+                fre=1575.42*10**6
+
+            if fre!=0:
+                sat={"noradID": catnr, "name": name,"epoch": epoch,"ecc": ecc,"incl": incl,"omega": omega,"w": w,"M": M,
+                "n": n,"freq": fre,"xECEF": [],"yECEF": [],"zECEF": [],"vDoppler": []}
+                mongo_db.satellites.insert_one(sat)
+                print(name," has been inserted in DB")
+    print("Added Completed")
+    now=datetime.now()
+    t=time.time()-start_time
+    print("Database updated at",now,"It took",t,"seconds to complete the task.")
+
+scheduler = BackgroundScheduler()
+job = scheduler.add_job(test_job, 'interval', minutes=1)
+scheduler.start()
+
 def GAST(esec):
     #Computes GAST [deg] at current time + esec [sec]
     #esec = ToA time in secs. from/to now (esec < 0 means ToA is in the past)
@@ -875,6 +964,7 @@ def jsonCheck(datosObtenidos):
         return datosObtenidos.json()
     except ValueError:
         return("error")
+
 
 
 if __name__ == '__main__':
