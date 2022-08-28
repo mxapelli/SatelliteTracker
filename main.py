@@ -6,6 +6,7 @@ import json
 import os
 import pymongo
 import matplotlib
+import matplotlib.patches as mpatches
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -106,7 +107,7 @@ def index():
     return render_template('index.html',datos=jsonSat)
 
 pi=math.pi
-incTime=30
+
 JD=0.0
 @app.route('/<int:catnr>')
 def satellite(catnr):
@@ -114,6 +115,7 @@ def satellite(catnr):
     ymap=[]
     zmap=[]
     pi=math.pi
+    incTime=30
     Ge = 6.67384*10**(-11)					#Gravitational constant
     Me = 5.972*10**24
     if 'latUser' in session:	
@@ -147,6 +149,8 @@ def satellite(catnr):
         fre=1575.42*10**6
     elif "IRIDIUM" in name:
         fre=1626.1042*10**6
+    elif "GPS" in name:
+        fre=1575.42*10**6
     else:
         return render_template('errorFrequency.html')
 
@@ -206,7 +210,7 @@ def satellite(catnr):
     Yvis=visCoord[1]
 
     #Groundtrack for NT periods
-    coordinates=computeCoordinates(esec,T,n,a,io,ecc,Oo,dO,w,Mo)
+    coordinates=computeCoordinates(esec,T,n,a,io,ecc,Oo,dO,w,Mo,incTime)
     xmap=coordinates[0]
     ymap=coordinates[1]
     zmap=coordinates[2]
@@ -274,6 +278,10 @@ def doppler(catnr):
         return render_template('error.html')
     name=sat["name"]
     freq=sat["freq"]
+    if freq==1575.42*10**6:
+        incTime=30
+    else:
+        incTime=10
 
     datosObtenidos=requests.get('https://celestrak.com/NORAD/elements/gp.php?CATNR='+str(catnr)+'&FORMAT=JSON')
     check=jsonCheck(datosObtenidos)
@@ -325,7 +333,7 @@ def doppler(catnr):
     Mo =  M* pi / 180                   #Mean anomaly at ToA [rad]
 
     #Groundtrack for NT periods
-    coordinates=computeCoordinates(esec,T,n,a,io,ecc,Oo,dO,w,Mo)
+    coordinates=computeCoordinates(esec,T,n,a,io,ecc,Oo,dO,w,Mo,incTime)
     xmap=coordinates[0]
     ymap=coordinates[1]
     zmap=coordinates[2]
@@ -446,8 +454,11 @@ def doppler(catnr):
             change.append(ind[i]*incTime)
         cat.append(catN)
         c=ind[i]
+    labels=[]
+    labels.append("First Stretch")
 
-    actual_time = session['time']
+    now = datetime.now()
+    actual_time = now.strftime("%d/%m/%Y %H:%M:%S")
     if len(timeP)<1:
         return  render_template('errorDoppler.html')
     init=timeP[0]
@@ -471,6 +482,7 @@ def doppler(catnr):
     visStep=[]
     visStep.append(times[0])
     if len(change)>0:
+        labels.append("Second Stretch")
         fin1 = actual_time_obj + timedelta(seconds=change[0])
         days.append(fin1.strftime("%d %b"))
         in2=actual_time_obj+timedelta(seconds=change[1])
@@ -508,6 +520,12 @@ def doppler(catnr):
     ax.set_yticks([0,20,40,60,80])
     ax.set_facecolor((0, 0, 1))
     ax.set_axisbelow(True)
+    pop_a = mpatches.Patch(color='yellow', label='First Stretch')
+    pop_b = mpatches.Patch(color='red', label='Second Stretch')
+    if len(change)>0:
+        ax.legend(handles=[pop_a,pop_b])
+    else:
+        ax.legend(handles=[pop_a])
     
     plt.savefig(img, format='png',bbox_inches = "tight")
     plt.close()
@@ -519,7 +537,7 @@ def doppler(catnr):
         
     fig,ax = plt.subplots(facecolor='#383A3F')
     ax.grid(c='white')
-    ax.scatter(timeP, dopplerVis, c=colormap[cat], s=40, alpha=1)
+    k=ax.scatter(timeP, dopplerVis, c=colormap[cat], s=40, alpha=1)
     ax.set_title("Doppler frequency of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
     ax.set_xlabel('Time (s)',c='white')  # Add an x-label to the axes.
     xticks=numpy.arange(init, fin+1, step=duration)
@@ -536,6 +554,13 @@ def doppler(catnr):
     ax.set_yticklabels(yticklabel,color='white')
     ax.set_facecolor((0, 0, 1))
     ax.set_axisbelow(True)
+
+    #Legend
+    if len(change)>0:
+        ax.legend(handles=[pop_a,pop_b])
+    else:
+        ax.legend(handles=[pop_a])
+
     plt.savefig(img2, format='png',bbox_inches = "tight")
     plt.close()
     img2.seek(0)
@@ -640,7 +665,7 @@ def ECEF2NED(ECEF,phi,lamda):
     NED=numpy.matmul(invM,ECEFt)
     return NED
 
-def computeCoordinates(esec,T,n,a,io,ecc,Oo,dO,w,Mo):
+def computeCoordinates(esec,T,n,a,io,ecc,Oo,dO,w,Mo,incTime):
     t = esec
     NT = 1
     j=0
