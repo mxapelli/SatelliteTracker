@@ -444,6 +444,7 @@ def doppler(catnr):
     c=0
     catN=0
     change=[]
+    pointChange=0
     for i in range(len(ind)):
         dopplerVis.append(fDReal[ind[i]])
         timeP.append(ind[i]*incTime)
@@ -452,10 +453,9 @@ def doppler(catnr):
             #To detect visibility changes
             change.append(ind[i-1]*incTime)
             change.append(ind[i]*incTime)
+            pointChange=i
         cat.append(catN)
         c=ind[i]
-    labels=[]
-    labels.append("First Stretch")
 
     now = datetime.now()
     actual_time = now.strftime("%d/%m/%Y %H:%M:%S")
@@ -482,7 +482,6 @@ def doppler(catnr):
     visStep=[]
     visStep.append(times[0])
     if len(change)>0:
-        labels.append("Second Stretch")
         fin1 = actual_time_obj + timedelta(seconds=change[0])
         days.append(fin1.strftime("%d %b"))
         in2=actual_time_obj+timedelta(seconds=change[1])
@@ -509,7 +508,18 @@ def doppler(catnr):
     fig = plt.figure(facecolor='#383A3F')
     ax = fig.add_subplot(projection='polar')
     ax.grid(c='white')
-    c = ax.scatter(az, elev, c=colormap[cat], s=30, alpha=1)
+    d = ax.scatter(az, elev, c=colormap[cat], s=30, alpha=1)
+    if len(change)>0:
+        azfirst=[]
+        elevfirst=[]
+        azfirst.append(az[0])
+        azfirst.append(az[pointChange])
+        elevfirst.append(elev[0])
+        elevfirst.append(elev[pointChange])
+        e = ax.scatter(azfirst, elevfirst, c='black', s=40, alpha=1)
+    else:
+        e = ax.scatter(az[0], elev[0], c='black', s=40, alpha=1)
+
     ax.set_title("Visibility of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
     ax.set_theta_zero_location('N')
     ax.set_rlabel_position(-90)
@@ -522,10 +532,11 @@ def doppler(catnr):
     ax.set_axisbelow(True)
     pop_a = mpatches.Patch(color='yellow', label='First Stretch')
     pop_b = mpatches.Patch(color='red', label='Second Stretch')
+    pop_c = mpatches.Patch(color='black', label='First point of Visibility')
     if len(change)>0:
-        ax.legend(handles=[pop_a,pop_b])
+        ax.legend(handles=[pop_a,pop_b,pop_c],loc="best")
     else:
-        ax.legend(handles=[pop_a])
+        ax.legend(handles=[pop_a,pop_c],loc="best")
     
     plt.savefig(img, format='png',bbox_inches = "tight")
     plt.close()
@@ -554,12 +565,6 @@ def doppler(catnr):
     ax.set_yticklabels(yticklabel,color='white')
     ax.set_facecolor((0, 0, 1))
     ax.set_axisbelow(True)
-
-    #Legend
-    if len(change)>0:
-        ax.legend(handles=[pop_a,pop_b])
-    else:
-        ax.legend(handles=[pop_a])
 
     plt.savefig(img2, format='png',bbox_inches = "tight")
     plt.close()
