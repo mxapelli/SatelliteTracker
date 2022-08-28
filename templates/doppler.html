@@ -39,7 +39,7 @@
     {% for entry in entries %}
        <p>{{ entry }}</p>
     {% endfor %}
-    <div>
+    <!--<div>
       <canvas id="DopplerChart" ></canvas>
           <script>
               fDoppler=[{% for f in doppler %}
@@ -85,7 +85,7 @@
               }};
               const DopplerChart = new Chart(document.getElementById('DopplerChart'),config);
       </script>
-    </div>
+    </div>-->
     <img src="data:image/png;base64, {{ plot_url }}">
     <img src="data:image/png;base64, {{ plotDoppler_url }}">
 </body>
