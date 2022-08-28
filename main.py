@@ -534,9 +534,13 @@ def doppler(catnr):
     pop_b = mpatches.Patch(color='red', label='Second Stretch')
     pop_c = mpatches.Patch(color='black', label='First point of Visibility')
     if len(change)>0:
-        ax.legend(handles=[pop_a,pop_b,pop_c],loc="best")
+        fig.legend(handles=[pop_a,pop_b,pop_c],loc="lower center",ncol=3)
+        fig.tight_layout()
+        fig.subplots_adjust(bottom=0.12)
     else:
-        ax.legend(handles=[pop_a,pop_c],loc="best")
+        fig.legend(handles=[pop_a,pop_c],loc="lower center",ncol=2)
+        fig.tight_layout()
+        fig.subplots_adjust(bottom=0.12)
     
     plt.savefig(img, format='png',bbox_inches = "tight")
     plt.close()
@@ -550,7 +554,7 @@ def doppler(catnr):
     ax.grid(c='white')
     k=ax.scatter(timeP, dopplerVis, c=colormap[cat], s=40, alpha=1)
     ax.set_title("Doppler frequency of Satellite "+name+" with ID "+str(catnr), va='bottom',c='white')
-    ax.set_xlabel('Time (s)',c='white')  # Add an x-label to the axes.
+    ax.set_xlabel('Time (UTC)',c='white')  # Add an x-label to the axes.
     xticks=numpy.arange(init, fin+1, step=duration)
     ax.set_xticks(xticks,c='white')
     ax.set_xticklabels(times,c='white',rotation = 90)
