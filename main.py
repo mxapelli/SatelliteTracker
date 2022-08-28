@@ -1,6 +1,6 @@
 import os
 from time import time
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, redirect, url_for
 from dotenv import load_dotenv
 import json
 import os
@@ -98,6 +98,7 @@ def index():
         session['latUser'] = float(coords[0])
         session['longUser'] = float(coords[1])
         session['altUser'] = float(altM)
+        return redirect(url_for('index'))
 
     jsonSat=[]
     for sat in mongo_db.satellites.find():
