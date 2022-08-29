@@ -112,7 +112,6 @@ def satellite(catnr):
     Mo =  M* pi / 180                   #Mean anomaly at ToA [rad]
 
     #Visibility Area of User
-    print(a)
     visCoord=visibilidadObs(a,latUser,longUser,altUser);
     Xvis=visCoord[0]
     Yvis=visCoord[1]
