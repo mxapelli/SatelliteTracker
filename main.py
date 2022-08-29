@@ -15,10 +15,6 @@ from datetime import datetime,timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import time
-import calendar
-import aiohttp
-import asyncio
-import urllib.request
 import math
 import numpy
 import requests
@@ -63,7 +59,6 @@ def satellite(catnr):
     xmap=[] 
     ymap=[]
     zmap=[]
-    pi=math.pi
     incTime=30
     Ge = 6.67384*10**(-11)					#Gravitational constant
     Me = 5.972*10**24
@@ -117,6 +112,7 @@ def satellite(catnr):
     Mo =  M* pi / 180                   #Mean anomaly at ToA [rad]
 
     #Visibility Area of User
+    print(a)
     visCoord=visibilidadObs(a,latUser,longUser,altUser);
     Xvis=visCoord[0]
     Yvis=visCoord[1]
@@ -458,7 +454,7 @@ def doppler(catnr):
     text=[("The frequency for this satellite is: "+str(freq/10**6)+" MHz"),("Max Doppler frequency: "+str(round(max(dopplerVis)/1000,2))+" kHz"),("Min Doppler frequency: "+str(round(min(dopplerVis)/1000,2))+" kHz"),("Max radial speed: " +str(round(max(vinstReal),2))+ " m/s"),(visText)]
     return render_template('doppler.html',entries=text,doppler=fDReal, plot_url=plot_url,plotDoppler_url=plotDoppler_url)
 
-def test_job():
+def dbUpdate():
     satsDB=[]
     satsCelestrak=[]
     start_time=time.time()
@@ -484,7 +480,7 @@ def test_job():
                     noradID=int(satsCelestrak[i][j]['NORAD_CAT_ID'])
                     epoch=satsCelestrak[i][j]['EPOCH']
                     if (catnr==noradID):
-                        if "IRIDIUM" in name:
+                        if "IRIDIUM" in name:#Esto es momentaneo, luego se borrara
                             name=name.strip("[-]")
                         if sat['epoch']!=epoch:
                             incl=satsCelestrak[i][j]['INCLINATION']
@@ -546,7 +542,7 @@ def test_job():
     print("Database updated at",now,"It took",t,"seconds to complete the task.")
 
 scheduler = BackgroundScheduler()
-job = scheduler.add_job(test_job, 'interval', minutes=1)
+job = scheduler.add_job(dbUpdate, 'interval', minutes=1)
 scheduler.start()
 
 def GAST(esec):
