@@ -34,24 +34,6 @@ mongo_db=client.db
 app = Flask(__name__)
 
 app.secret_key = os.environ.get("passwordSess")
-satellites=[]
-constellations = ['GROUP=starlink',
-                      'GROUP=iridium-next', 'GROUP=gps-ops', 'CATNR=25544']
-async def main():
-        async with aiohttp.ClientSession() as session:
-            tasks = []
-            for sat_id in constellations:
-                task = asyncio.ensure_future(get_sat_data(session, sat_id))
-                tasks.append(task)
-            satellites = await asyncio.gather(*tasks)
-
-async def get_sat_data(session, sat_id):
-        url = f'https://celestrak.com/NORAD/elements/gp.php?{sat_id}&FORMAT=JSON'
-        async with session.get(url) as response:
-            result_data = await response.json()
-            satellites.append(result_data)
-#asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) #Borrar esta linea para el deployment
-asyncio.run(main())
 
 @app.route('/',methods = ['POST', 'GET'])
 def index():
