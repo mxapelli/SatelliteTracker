@@ -539,9 +539,8 @@ def dbUpdate():
     now=datetime.now()
     t=time.time()-start_time
     print("Database updated at",now,"It took",t,"seconds to complete the task.")
-
 scheduler = BackgroundScheduler()
-job = scheduler.add_job(dbUpdate, 'interval', minutes=1)
+job = scheduler.add_job(dbUpdate, 'interval',seconds=15, start_date='2022-08-29 03:42:00')
 scheduler.start()
 
 def GAST(esec):
@@ -843,5 +842,5 @@ def jsonCheck(datosObtenidos):
         return("error")
 
 if __name__ == '__main__':
-    app.run(debug=False,use_reloader=False)
+    app.run()
  
