@@ -80,7 +80,7 @@ def satellite(catnr):
         print("Error satellite does not exist")
         return render_template('error.html')
 
-
+    name=sat['name']
     print("The user has selected satellite: ",name)
     epoch=sat['epoch']
     epochT=str(epoch).split("T")
@@ -144,23 +144,7 @@ def satellite(catnr):
         vis=1
     else:
         vis=0
-
-    #Map values
-    worldLat=[] 
-    worldLong=[]
-    f = open('world_110m.txt','r')
-    lines=f.readlines()
-    for line in lines:
-        x=line.strip("\n")
-        if(x!=''):
-            x=x.strip()
-            y= x.split()
-            worldLong.append(float(y[0]))
-            worldLat.append(float(y[1]))
     
-    id = { "noradID": catnr }
-    newvalues = { "$set": { "a": a,"xECEF": xmap,"yECEF": ymap,"zECEF": zmap } }
-    mongo_db.satellites.update_one(id,newvalues)
     atime=time.localtime()
     st=time.strftime("%a, %d %b %Y %H:%M:%S ",atime)
     now = datetime.now()
