@@ -545,7 +545,7 @@ def test_job():
     print("Database updated at",now,"It took",t,"seconds to complete the task.")
 
 scheduler = BackgroundScheduler()
-job = scheduler.add_job(test_job, 'interval', minutes=10)
+job = scheduler.add_job(test_job, 'interval', minutes=1)
 scheduler.start()
 
 def GAST(esec):
