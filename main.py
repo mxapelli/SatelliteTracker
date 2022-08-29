@@ -52,36 +52,6 @@ async def get_sat_data(session, sat_id):
             satellites.append(result_data)
 #asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy()) #Borrar esta linea para el deployment
 asyncio.run(main())
-"""cont=0
-for i in range(len(satellites)):
-        for j in range(len(satellites[i])):
-            noradID=int(satellites[i][j]['NORAD_CAT_ID'])
-            name=str(satellites[i][j]['OBJECT_NAME'])
-            epoch=str(satellites[i][j]['EPOCH'])
-            incl=satellites[i][j]['INCLINATION']
-            omega=satellites[i][j]['RA_OF_ASC_NODE']
-            ecc=satellites[i][j]['ECCENTRICITY']
-            w=satellites[i][j]['ARG_OF_PERICENTER']
-            M=satellites[i][j]['MEAN_ANOMALY']
-            n=satellites[i][j]['MEAN_MOTION']
-            cont=cont+1
-            print(cont)
-            
-            fre=0
-            if "ISS" in name:
-                fre=145.8*10**6
-            elif "STARLINK" in name:
-                fre=10950*10**6
-            elif "GPS" in name:
-                fre=1575.42*10**6
-            elif "IRIDIUM" in name:
-                fre=1626.1042*10**6
-            
-            sat=mongo_db.satellites.find_one({"noradID": noradID})
-            if not sat and not "FALCON" in name:
-                sat={"noradID": noradID, "name": name,"epoch": epoch,"ecc": ecc,"incl": incl,"omega": omega,"w": w,"M": M,
-                "n": n,"freq": fre,"xECEF": [],"yECEF": [],"zECEF": [],"vDoppler": []}
-                mongo_db.satellites.insert_one(sat)"""
 
 @app.route('/',methods = ['POST', 'GET'])
 def index():
@@ -665,7 +635,7 @@ def test_job():
     print("Database updated at",now,"It took",t,"seconds to complete the task.")
 
 scheduler = BackgroundScheduler()
-job = scheduler.add_job(test_job, 'interval', minutes=1)
+job = scheduler.add_job(test_job, 'interval', minutes=10)
 scheduler.start()
 
 def GAST(esec):
@@ -965,8 +935,6 @@ def jsonCheck(datosObtenidos):
         return datosObtenidos.json()
     except ValueError:
         return("error")
-
-
 
 if __name__ == '__main__':
     app.run()
