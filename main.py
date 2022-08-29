@@ -37,7 +37,6 @@ app.secret_key = os.environ.get("passwordSess")
 
 @app.route('/',methods = ['POST', 'GET'])
 def index():
-    start_time=time.time()
     if request.method == 'POST':
       coordsData = request.form['nm']
       print("Coordenadas ",coordsData)
@@ -56,13 +55,8 @@ def index():
     for sat in mongo_db.satellites.find():
         jsonSat.append({"OBJECT_NAME": str(sat["name"]), "NORAD_CAT_ID": str(sat["noradID"])})
 
-    #print(time.time()-start_time)
-    print(satellites[0][0]['OBJECT_NAME']+str(satellites[0][0]['NORAD_CAT_ID']))
     return render_template('index.html',datos=jsonSat)
 
-pi=math.pi
-
-JD=0.0
 @app.route('/<int:catnr>')
 def satellite(catnr):
     xmap=[] 
@@ -134,7 +128,6 @@ def satellite(catnr):
             newvalues = { "$set": { "epoch": epoch,"incl": incl,"ecc": ecc,"omega": omega,"w": w,"M":M,"n":n} }
             mongo_db.satellites.update_one(id,newvalues)
             print(name," has been updated")
-
 
     #TIME TO TOA
     date=epochT[0]
@@ -545,6 +538,7 @@ def test_job():
         result_data=requests.get('https://celestrak.com/NORAD/elements/gp.php?'+constellations[i]+'&FORMAT=JSON')
         satsCelestrak.append(result_data.json())
 
+    #Updating existing satellites
     for sat in satsDB:
         catnr=sat['noradID']
         name=sat['name']
@@ -565,7 +559,7 @@ def test_job():
                             M=satsCelestrak[i][j]['MEAN_ANOMALY']
                             n=satsCelestrak[i][j]['MEAN_MOTION']
                             id = { "noradID": catnr }
-                            newvalues = { "$set": { "epoch": epoch,"incl": incl,"ecc": ecc,"omega": omega,"w": w,"M":M,"n":n} }
+                            newvalues = { "$set": { "name": name,"epoch": epoch,"incl": incl,"ecc": ecc,"omega": omega,"w": w,"M":M,"n":n} }
                             mongo_db.satellites.update_one(id,newvalues)
                             print(name," has been updated")
                         del satsCelestrak[i][j]
