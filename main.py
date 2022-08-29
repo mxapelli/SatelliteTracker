@@ -843,5 +843,5 @@ def jsonCheck(datosObtenidos):
         return("error")
 
 if __name__ == '__main__':
-    app.run(use_reloader=False)
+    app.run(debug=False,use_reloader=False)
  
