@@ -35,6 +35,7 @@ app = Flask(__name__)
 
 app.secret_key = os.environ.get("passwordSess")
 
+pi=math.pi
 @app.route('/',methods = ['POST', 'GET'])
 def index():
     if request.method == 'POST':
