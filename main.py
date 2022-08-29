@@ -152,7 +152,7 @@ def satellite(catnr):
     session['time']=dt_string
     print ("session info",dt_string)
     text=[("You have selected the "+name+" satellite with Catalog Number: "+str(catnr)),("The local time is: " +st)]
-    return render_template('satellite.html',entries=text,longs=longmap,lats=latmap,worldLa=worldLat,worldLo=worldLong,number=str(catnr),userlat=latUser,userlong=longUser,xvis=Xvis,yvis=Yvis,vis=vis)
+    return render_template('satellite.html',entries=text,longs=longmap,lats=latmap,number=str(catnr),userlat=latUser,userlong=longUser,xvis=Xvis,yvis=Yvis,vis=vis)
 
 @app.route('/<int:catnr>/doppler')
 def doppler(catnr):
@@ -177,33 +177,6 @@ def doppler(catnr):
         incTime=30
     else:
         incTime=10
-
-    datosObtenidos=requests.get('https://celestrak.com/NORAD/elements/gp.php?CATNR='+str(catnr)+'&FORMAT=JSON')
-    check=jsonCheck(datosObtenidos)
-    if check=="error":
-        print("Error satellite does not exist")
-        return render_template('error.html')
-    datosSat= datosObtenidos.json()
-    print("The user has selected satellite: ",datosSat[0]['OBJECT_NAME'])
-    epoch=datosSat[0]['EPOCH']
-    epochT=str(epoch).split("T")
-    epochT[1]=epochT[1].split(".")
-    hour=epochT[1][0]
-    incl=datosSat[0]['INCLINATION']
-    omega=datosSat[0]['RA_OF_ASC_NODE']
-    ecc=datosSat[0]['ECCENTRICITY']
-    w=datosSat[0]['ARG_OF_PERICENTER']
-    M=datosSat[0]['MEAN_ANOMALY']
-    n=datosSat[0]['MEAN_MOTION']
-
-    if sat is not None:
-        name=sat["name"]
-        if sat["epoch"]!=epoch:
-            id = { "noradID": catnr }
-            newvalues = { "$set": { "epoch": epoch,"incl": incl,"ecc": ecc,"omega": omega,"w": w,"M":M,"n":n} }
-            mongo_db.satellites.update_one(id,newvalues)
-            print(name," has been updated")
-
 
     #TIME TO TOA
     date=epochT[0]
