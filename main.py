@@ -178,6 +178,18 @@ def doppler(catnr):
     else:
         incTime=10
 
+    print("The user has selected visibility of satellite: ",name)
+    epoch=sat['epoch']
+    epochT=str(epoch).split("T")
+    epochT[1]=epochT[1].split(".")
+    hour=epochT[1][0]
+    incl=sat['incl']
+    omega=sat['omega']
+    ecc=sat['ecc']
+    w=sat['w']
+    M=sat['M']
+    n=sat['n']
+
     #TIME TO TOA
     date=epochT[0]
     x=time.strptime(date+" "+ hour, "%Y-%m-%d %H:%M:%S") 
@@ -284,7 +296,6 @@ def doppler(catnr):
     id = { "noradID": catnr }
     newvalues = { "$set": { "vDoppler": fDReal} }
     mongo_db.satellites.update_one(id,newvalues)
-
 
     #Visibility of satellite
     elev=[]
