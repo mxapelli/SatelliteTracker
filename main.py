@@ -75,59 +75,23 @@ def satellite(catnr):
         longUser= 1.9872286269285848
         altUser= 4
 
-    datosObtenidos=requests.get('https://celestrak.com/NORAD/elements/gp.php?CATNR='+str(catnr)+'&FORMAT=JSON')
-    check=jsonCheck(datosObtenidos)
-    if check=="error":
+    sat=mongo_db.satellites.find_one({"noradID": catnr})
+    if sat is None:
         print("Error satellite does not exist")
         return render_template('error.html')
-    datosSat= datosObtenidos.json()
 
-    sat=mongo_db.satellites.find_one({"noradID": catnr})
-    if sat is not None:
-        name=sat["name"]
-    else:
-        name=datosSat[0]['OBJECT_NAME']
-
-    fre=0
-    if "ISS" in name:
-        fre=145.8*10**6
-    elif "STARLINK" in name:
-        fre=10950*10**6
-    elif "NAVSTAR" in name:
-        fre=1575.42*10**6
-    elif "IRIDIUM" in name:
-        fre=1626.1042*10**6
-    elif "GPS" in name:
-        fre=1575.42*10**6
-    else:
-        return render_template('errorFrequency.html')
 
     print("The user has selected satellite: ",name)
-    epoch=datosSat[0]['EPOCH']
+    epoch=sat['epoch']
     epochT=str(epoch).split("T")
     epochT[1]=epochT[1].split(".")
     hour=epochT[1][0]
-    incl=datosSat[0]['INCLINATION']
-    omega=datosSat[0]['RA_OF_ASC_NODE']
-    ecc=datosSat[0]['ECCENTRICITY']
-    w=datosSat[0]['ARG_OF_PERICENTER']
-    M=datosSat[0]['MEAN_ANOMALY']
-    n=datosSat[0]['MEAN_MOTION']
-
-          
-    if sat is None and fre!=0:
-        sat={"noradID": catnr, "name": name,"epoch": epoch,"ecc": ecc,"incl": incl,"omega": omega,"w": w,"M": M,
-                "n": n,"freq": fre,"xECEF": [],"yECEF": [],"zECEF": [],"vDoppler": []}
-        mongo_db.satellites.insert_one(sat)
-        print(name," has been inserted in DB")
-
-    if sat is not None:
-        name=sat["name"]
-        if sat["epoch"]!=epoch:
-            id = { "noradID": catnr }
-            newvalues = { "$set": { "epoch": epoch,"incl": incl,"ecc": ecc,"omega": omega,"w": w,"M":M,"n":n} }
-            mongo_db.satellites.update_one(id,newvalues)
-            print(name," has been updated")
+    incl=sat['incl']
+    omega=sat['omega']
+    ecc=sat['ecc']
+    w=sat['w']
+    M=sat['M']
+    n=sat['n']
 
     #TIME TO TOA
     date=epochT[0]
@@ -536,7 +500,9 @@ def test_job():
     constellations = ['GROUP=starlink','GROUP=iridium-next', 'GROUP=gps-ops', 'CATNR=25544','GROUP=iridium']
     for i in range(len(constellations)):
         result_data=requests.get('https://celestrak.com/NORAD/elements/gp.php?'+constellations[i]+'&FORMAT=JSON')
-        satsCelestrak.append(result_data.json())
+        check=jsonCheck(result_data)
+        if check!="error":
+            satsCelestrak.append(result_data.json())
 
     #Updating existing satellites
     for sat in satsDB:
