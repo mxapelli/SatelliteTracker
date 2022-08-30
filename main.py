@@ -540,7 +540,7 @@ def dbUpdate():
     t=time.time()-start_time
     print("Database updated at",now,"It took",t,"seconds to complete the task.")
 scheduler = BackgroundScheduler()
-job = scheduler.add_job(dbUpdate, 'interval',seconds=15, start_date='2022-08-29 01:45:00')
+job = scheduler.add_job(dbUpdate, 'interval',minutes=10, start_date='2022-08-29 15:29:00')
 scheduler.start()
 
 def GAST(esec):
@@ -823,7 +823,7 @@ def visibilidadObs(a,latObs,longObs,altObs):
             j=j+1
     #Generació elipse visibilitat
     a=(abs(longvis[len(longvis)-1]-longvis[0])/2)*0.925
-    b=abs(latvis[len(latvis)-1]-latvis[0])/2
+    b=(abs(latvis[len(latvis)-1]-latvis[0])/2)*1.083
     x0 = longObs
     y0 = latObs
     Xvis=[]

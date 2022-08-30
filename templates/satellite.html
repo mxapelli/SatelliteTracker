@@ -25,11 +25,15 @@
                 {% endfor %}]
                 satPos1=[];
                 satPos2=[];
+                satPos3=[]
                 longProv=0;
                 newSat=0;
                 for(var j=1; j<long.length; j++) {
-                    if  ((longProv>0) && (long[j]<0)){
-                        newSat=1;
+                    if  (((longProv>0) && (long[j]<0))||((longProv<0) && (long[j]>0))){
+                        newSat=newSat+1;
+                    }
+                    if (newSat==2){
+                        satPos3.push([lat[j], long[j]]);
                     }
                     if (newSat==1){
                         satPos2.push([lat[j], long[j]]);
@@ -110,6 +114,7 @@
             var polygon = L.polygon(visPos).addTo(map);
             var polyline = L.polyline(satPos1, {color: 'red'}).addTo(map);
             var polyline2 = L.polyline(satPos2, {color: 'red'}).addTo(map);
+            var polyline3 = L.polyline(satPos3, {color: 'red'}).addTo(map);
 
     
             controlCapas = L.control.layers(baseMaps);
