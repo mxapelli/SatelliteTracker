@@ -111,11 +111,6 @@ def satellite(catnr):
     w =  w * pi / 180                   #argument of perigee [rad]
     Mo =  M* pi / 180                   #Mean anomaly at ToA [rad]
 
-    #Visibility Area of User
-    visCoord=visibilidadObs(a,latUser,longUser,altUser);
-    Xvis=visCoord[0]
-    Yvis=visCoord[1]
-
     #Groundtrack for NT periods
     coordinates=computeCoordinates(esec,T,n,a,io,ecc,Oo,dO,w,Mo,incTime)
     xmap=coordinates[0]
@@ -127,6 +122,7 @@ def satellite(catnr):
 
     #Check Visibility of satellite
     elev=[]
+    vis=[]
     for i in range(len(xmap)):
         satECEF=[xmap[i], ymap[i], zmap[i]]
         userECEF=LLA2ECEF(latUser,longUser,altUser)
@@ -136,10 +132,16 @@ def satellite(catnr):
         alpha= math.asin((-NED[2])/d)*180/pi
         if(alpha>=10):
             elev.append(alpha)
+            vis.append(satECEF)
     if len(elev)>0:
         vis=1
     else:
         vis=0
+
+    #Visibility Area of User
+    visCoord=visibilidadObs(a,latUser,longUser,altUser,name);
+    Xvis=visCoord[0]
+    Yvis=visCoord[1]
     
     atime=time.localtime()
     st=time.strftime("%a, %d %b %Y %H:%M:%S ",atime)
@@ -784,7 +786,7 @@ def dot(a,b):
         result=result+a[n]*b[n]
     return result
 
-def visibilidadObs(a,latObs,longObs,altObs):
+def visibilidadObs(a,latObs,longObs,altObs,name):
     #Visibilidad observador
     pi=math.pi
     Rearth=6.378e+06
@@ -792,8 +794,6 @@ def visibilidadObs(a,latObs,longObs,altObs):
     
     latvis=[]
     longvis=[]
-    k=1
-    j=1
     for i in range(-720,720):
         #Radio latitud
         latV=i*pi/1440
@@ -806,7 +806,6 @@ def visibilidadObs(a,latObs,longObs,altObs):
         alpha= math.asin((-NED[2])/d)*180/pi
         if(alpha>=10):
             latvis.append(latV)
-            k=k+1
         
         #Radio longitud
         longV=i*pi/720
@@ -820,10 +819,9 @@ def visibilidadObs(a,latObs,longObs,altObs):
 
         if(alpha>=10):
             longvis.append(longV)
-            j=j+1
     #Generació elipse visibilitat
-    a=(abs(longvis[len(longvis)-1]-longvis[0])/2)*0.925
-    b=(abs(latvis[len(latvis)-1]-latvis[0])/2)*1.083
+    a=abs(longvis[len(longvis)-1]-longvis[0])/2
+    b=abs(latvis[len(latvis)-1]-latvis[0])/2
     x0 = longObs
     y0 = latObs
     Xvis=[]
@@ -832,6 +830,35 @@ def visibilidadObs(a,latObs,longObs,altObs):
         t=n*0.01*pi
         Xvis.append(x0 + a*math.cos(t))
         Yvis.append(y0 + b*math.sin(t))
+
+    if "GPS" in name:
+        long2=[]
+        long3=[]
+        for latm in range(round(latvis[0]),round(latvis[-1])):
+            longprov=[]
+            for i in range(-720,720): 
+                longV=i*pi/720
+                longV=longV*180/pi
+                satECEF=LLA2ECEF(latm, longV, r)
+                userECEF=LLA2ECEF(latObs,longObs,altObs)
+                pointV=sub(satECEF,userECEF)
+                NED=ECEF2NED(pointV,latObs*pi/180,longObs*pi/180)
+                d=math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
+                alpha= math.asin((-NED[2])/d)*180/pi
+                if(alpha>=10):
+                    longprov.append(longV)
+            if len(longprov)>=1:
+                long2.append(longprov[0])
+                long3.append(longprov[-1])
+        Xvis=[]
+        Yvis=[]
+        for n in range(round(latvis[0]),round(latvis[-1])):
+            Yvis.append(n)
+        Yvis=Yvis[::-1]
+        for n in range(round(latvis[0]),round(latvis[-1])):
+            Yvis.append(n)
+        long2=long2[::-1]
+        Xvis=long2+long3
     visCoord=[Xvis,Yvis]
     return visCoord
 
