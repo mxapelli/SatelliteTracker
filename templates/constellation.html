@@ -10,151 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
     <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
-    <script>
-        var map, osm, esri, terreno;
-        var controlCapas;
-        var controlEscala;
-        let markers = [];
-    
-        function init() {
-            userLLA=[]
-            userLLA.push(["{{userlat}}", "{{userlong}}"]);
-            long=[{% for item in longs %}
-                "{{ item }}",
-                {% endfor %}]
-
-            lat=[{% for item in lats %}
-                "{{ item }}",
-                {% endfor %}]
-                satPos=[];
-                for(var j=0; j<long.length; j++) {
-                        satPos.push([lat[j], long[j]]);
-                }
-
-            Xvis=[{% for item in xvis %}
-                "{{ item }}",
-                {% endfor %}]
-
-            Yvis=[{% for item in yvis %}
-                "{{ item }}",
-                {% endfor %}]
-                visPos=[];
-                for(var j=0; j<Xvis.length; j++) {
-                    visPos.push([Yvis[j],Xvis[j]]);
-                }
-            satName=[{% for item in satname %}
-                "{{ item }}",
-                {% endfor %}]
-
-            constName="{{constName}}"
-
-            vis=[{% for item in vis %}
-                {{ item }},
-                {% endfor %}]
-
-            if (constName=="STARLINK"){
-                var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
-                iconSize: [10,10], // size of the icon
-                });
-            }
-            else{
-                var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
-                iconSize: [40,40], // size of the icon
-                });
-            }
-            if (constName=="GPS"){
-                for (let i = 0; i < satName.length; i++) {
-                    let text = satName[i];
-                    const myArray = text.split(" ");
-                    console.log(myArray)
-                    if (myArray[2]==""){
-                        satName[i]= myArray[0]+" "+myArray[3]+myArray[4];
-                    }
-                    else{
-                        satName[i]= myArray[0]+" "+myArray[2]+myArray[3];
-                    }    
-                }
-            }
-
-
-            var southWest = L.latLng(-89.98155760646617, -180),
-            northEast = L.latLng(89.99346179538875, 180);
-            var bounds = L.latLngBounds(southWest, northEast);
-            map = L.map('map',{maxBounds: bounds,
-                maxBoundsViscosity: 1.0, fullscreenControl: true}).setView([20, 1.8382], 1);
-                /*Legend specific*/
-                var legend = L.control({ position: "topleft" });
-                
-                legend.onAdd = function(map) {
-                    var div = L.DomUtil.create("div", "legend");
-                    div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
-                    div.innerHTML += '<i style="background: black"></i><span>Satellite Position at plot time</span><br>';
-                    return div;
-                };
-                legend.addTo(map);
-
-    
-            esri = L.tileLayer(
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 7,
-                minZoom: 2,
-                attribution: 'Tiles © Esri',
-                noWrap: true,              //this is the crucial line!
-                bounds: [
-                    [-90, -180],
-                    [90, 180]]
-            });
-    
-            osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 7,
-                minZoom: 2,
-                attribution: 'OSM',
-                noWrap: true,              //this is the crucial line!
-                bounds: [
-                    [-90, -180],
-                    [90, 180]]
-            }).addTo(map);
-    
-            var baseMaps = {
-                "Satellite": esri,
-                "Default": osm
-            };
-
-            var latUser = parseFloat(userLLA[0][0]).toFixed(2);
-            var longUser = parseFloat(userLLA[0][1]).toFixed(2);
-            var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
-            var polygon = L.polygon(visPos).addTo(map);
-            for (let i = 0; i < satPos.length; i++) {
-                var latSat=parseFloat(satPos[i][0]).toFixed(2);
-                var longSat= parseFloat(satPos[i][1]).toFixed(2);
-                var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]);
-                if (vis[i]==1){
-                    markers[i] = L.marker(satPos[i],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
-                }
-                else{
-                    markers[i] = L.marker(satPos[i],{icon: satIcon}).bindPopup(new_popup).addTo(map);
-                }
-                
-            }
-
-            controlCapas = L.control.layers(baseMaps);
-            controlCapas.addTo(map);
-    
-            controlEscala = L.control.scale();
-            controlEscala.addTo(map);
-            moveISS();
-            console.log("ejecutada")
-        }
-        function moveISS() {
-            console.log("dentro")
-            for (let i = markers.length; i >= 0; i--) {
-                var latSat=parseFloat(i).toFixed(2);
-                var longSat= parseFloat(i).toFixed(2);
-                markers[i].setLatLng([50, 30]).update();
-            }
-            setTimeout(moveISS, 5000);
-        }        
-    </script>
     <style>
     body {
         background-color:#383A3F;
@@ -224,7 +79,7 @@
     }
     </style>
 </head>
-<body onLoad="init()">
+<body>
     <h1>{{ constName }} Constellation</h1>
     <div class="grid-container">
         <div class="item1">
@@ -235,5 +90,206 @@
     </div>
     <div id="map">
     </div>
+    <script>
+        var map, osm, esri, terreno;
+        var controlCapas;
+        var controlEscala;
+        var southWest = L.latLng(-89.98155760646617, -180),
+        northEast = L.latLng(89.99346179538875, 180);
+        var bounds = L.latLngBounds(southWest, northEast);
+        map = L.map('map',{maxBounds: bounds, maxBoundsViscosity: 1.0, fullscreenControl: true}).setView([20, 1.8382], 1);
+
+        esri = L.tileLayer(
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 7,
+                minZoom: 2,
+                attribution: 'Tiles © Esri',
+                noWrap: true,              //this is the crucial line!
+                bounds: [
+                    [-90, -180],
+                    [90, 180]]
+        });
+    
+        osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 7,
+                minZoom: 2,
+                attribution: 'OSM',
+                noWrap: true,              //this is the crucial line!
+                bounds: [
+                    [-90, -180],
+                    [90, 180]]
+        }).addTo(map);
+    
+        var baseMaps = {
+                "Satellite": esri,
+                "Default": osm
+        };
+        
+        let markers = [];
+        userLLA=[]
+        userLLA.push(["{{userlat}}", "{{userlong}}"]);
+
+
+        satName=[{% for item in satname %}
+                "{{ item }}",
+                {% endfor %}]
+
+        
+
+        const long= JSON.parse({{longs|tojson}});
+        console.log(long)
+
+        const lat= JSON.parse({{lats|tojson}});
+        console.log(lat)
+        satPos=[]
+        for (let i = 0; i < satName.length; i++) {
+            pos=[]
+            for (let j = 0; j < long[0].length; j++) {
+                pos.push([lat[i][j], long[i][j]])
+            }
+            satPos.push(pos)
+        }
+
+        const vis= JSON.parse({{vis|tojson}});
+        console.log(vis)
+
+        Xvis=[{% for item in xvis %}
+            "{{ item }}",
+            {% endfor %}]
+
+        Yvis=[{% for item in yvis %}
+            "{{ item }}",
+            {% endfor %}]
+            visPos=[];
+            for(var j=0; j<Xvis.length; j++) {
+                visPos.push([Yvis[j],Xvis[j]]);
+            }
+
+
+        constName="{{constName}}"
+
+        
+
+        if (constName=="STARLINK"){
+                var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
+                iconSize: [10,10], // size of the icon
+                });
+        }
+        else{
+                var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
+                iconSize: [40,40], // size of the icon
+                });
+        }
+        if (constName=="GPS"){
+                for (let i = 0; i < satName.length; i++) {
+                    let text = satName[i];
+                    const myArray = text.split(" ");
+
+                    if (myArray[2]==""){
+                        satName[i]= myArray[0]+" "+myArray[3]+myArray[4];
+                    }
+                    else{
+                        satName[i]= myArray[0]+" "+myArray[2]+myArray[3];
+                    }    
+                }
+        }
+
+
+        
+        /*Legend specific*/
+        var legend = L.control({ position: "topleft" });
+                
+        legend.onAdd = function(map) {
+                    var div = L.DomUtil.create("div", "legend");
+                    div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
+                    div.innerHTML += '<i style="background: black"></i><span>Satellite Position at plot time</span><br>';
+                    return div;
+        };
+        legend.addTo(map);
+
+    
+
+
+        var latUser = parseFloat(userLLA[0][0]).toFixed(2);
+        var longUser = parseFloat(userLLA[0][1]).toFixed(2);
+        var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
+        var polygon = L.polygon(visPos).addTo(map);
+        c=0
+        colors=['red','blue','green','yellow','orange','purple','sienna','limegreen','indigo','silver']
+        for (let i = 0; i < satPos.length; i++) {
+            if (constName!="STARLINK"){
+                spl=0
+                for(let j=1; j<satPos[i].length; j++) {
+                    if  (((satPos[i][j][1]<0) && (satPos[i][j-1][1]>0) )||((satPos[i][j-1][1]<-140) && (satPos[i][j][1]>0))){
+                       spl=j 
+                    }
+                }
+                if (spl!=0){
+                    const satPos1 = satPos[i].slice(0, spl-1);
+                    const satPos2 = satPos[i].slice(satPos[i].length - (spl-1));
+                    var polyline = L.polyline(satPos1, {color: colors[c]}).addTo(map);
+                    var polyline = L.polyline(satPos2, {color: colors[c]}).addTo(map);
+                    c=c+1
+                    if (c==10){
+                        c=0
+                    }
+
+                }
+                else{
+                    var polyline = L.polyline(satPos[i], {color: colors[c]}).addTo(map);
+                    c=c+1
+                    if (c==10){
+                        c=0
+                    }
+                }
+
+            }
+            var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]);
+            if (vis[i][0]==1){
+                markers.push(L.marker(satPos[i][0],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup());
+            }
+            else{
+                markers.push(L.marker(satPos[i][0],{icon: satIcon}).bindPopup(new_popup).addTo(map));
+            }        
+        }
+
+        controlCapas = L.control.layers(baseMaps);
+        controlCapas.addTo(map);
+    
+        controlEscala = L.control.scale();
+        controlEscala.addTo(map);
+
+        k=0
+        function moveSat() {
+            for (let i = 0; i < markers.length; i++) {
+                map.removeLayer(markers[i])
+                if (vis[i][k]==1 && k>=1 && vis[i][k-1]==0){
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]+" IN");
+                    var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
+                }
+                else if(k==0 && vis[i][k]==1 && constName!="STARLINK"){
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]);
+                    var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
+                }
+                else if(vis[i][k]==0 && k>=1 && vis[i][k-1]==1){
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]+" OUT");
+                    var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
+                }
+                else{
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]);
+                    var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map);
+                }
+                markers.splice(i,1,marker)
+            }
+            k=k+1
+            setTimeout(moveSat, 5000);
+        }  
+        moveSat();     
+    </script>
+    <script type="text/javascript">
+        setTimeout(function () { 
+          location.reload();
+        },  600*1000);
+    </script>
 </body>
 </html>

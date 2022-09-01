@@ -226,23 +226,35 @@ def constellation(constellation_name):
             dO = 0  # Rate of Right ascension
             w = w * pi / 180  # argument of perigee [rad]
             Mo = M * pi / 180  # Mean anomaly at ToA [rad]
-            
+
+            t=esec
+            T=600
+            visSat=[]
+            latSat=[]
+            longSat=[]
             # Groundtrack for NT periods
-            ecef= Kepler2ECEF(esec, a, io, ecc, Oo, dO, w, Mo, n)
-            # Check Visibility of satellite
-            satECEF = [ecef[0], ecef[1], ecef[2]]
-            userECEF = LLA2ECEF(latUser, longUser, altUser)
-            pointV = sub(satECEF, userECEF)
-            NED = ECEF2NED(pointV, latUser*pi/180, longUser*pi/180)
-            d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
-            alpha = math.asin((-NED[2])/d)*180/pi
-            if (alpha >= 10):
-                vis.append(1)
-            else:
-                vis.append(0)
-            lla=ECEF2LLA(ecef[0],ecef[1],ecef[2])
-            latmap.append(lla[0])
-            longmap.append(lla[1])
+            while t < esec + T:
+                ecef= Kepler2ECEF(t, a, io, ecc, Oo, dO, w, Mo, n)
+                # Check Visibility of satellite
+                satECEF = [ecef[0], ecef[1], ecef[2]]
+                userECEF = LLA2ECEF(latUser, longUser, altUser)
+                pointV = sub(satECEF, userECEF)
+                NED = ECEF2NED(pointV, latUser*pi/180, longUser*pi/180)
+                d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
+                alpha = math.asin((-NED[2])/d)*180/pi
+                if (alpha >= 10):
+                    visSat.append(1)
+                else:
+                    visSat.append(0)
+                lla=ECEF2LLA(ecef[0],ecef[1],ecef[2])
+                lla[0] = round(lla[0], 10)
+                lla[1] = round(lla[1], 10)
+                latSat.append(lla[0])
+                longSat.append(lla[1])
+                t=t+30
+            vis.append(visSat)
+            latmap.append(latSat)
+            longmap.append(longSat)
             if (a>amax):
                 amax=a
                
@@ -255,7 +267,8 @@ def constellation(constellation_name):
         atime = time.localtime()
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
         text = [("You have selected the "+constName+" constellation"), ("The local time is: " + st)]
-        return render_template('constellation.html', entries=text, longs=longmap, lats=latmap, satname=satname, userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis,constName=constName,vis=vis)
+        print(longmap)
+        return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis,constName=constName,vis=json.dumps(vis))
 
 
 @app.route('/<int:catnr>/doppler')
