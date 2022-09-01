@@ -276,7 +276,7 @@
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
                 }
                 else{
-                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]);
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<b>Blah blah Village</b><a href='http://www.cnn.com'>Test</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map);
                 }
                 markers.splice(i,1,marker)
@@ -289,10 +289,10 @@
     <script type="text/javascript">
         constName="{{constName}}"
         if (constName=="GPS"){
-            t=20
+            t=30*60
         }
         else{
-            t=10
+            t=10*60
         }
         setTimeout(function () { 
           location.reload();
