@@ -287,9 +287,16 @@
         moveSat();     
     </script>
     <script type="text/javascript">
+        constName="{{constName}}"
+        if (constName=="GPS"){
+            t=20
+        }
+        else{
+            t=10
+        }
         setTimeout(function () { 
           location.reload();
-        },  600*1000);
+        },  t*1000);
     </script>
 </body>
 </html>
