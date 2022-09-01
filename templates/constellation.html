@@ -219,7 +219,7 @@
         var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
         var polygon = L.polygon(visPos).addTo(map);
         c=0
-        colors=['red','blue','green','yellow','orange','purple','sienna','limegreen','indigo','silver']
+        colors=['red','blue','green','yellow','orange','purple','sienna','lime','indigo','silver','fuchsia','cyan','navy']
         for (let i = 0; i < satPos.length; i++) {
             if (constName!="STARLINK"){
                 spl=0
@@ -238,7 +238,7 @@
                     var polyline = L.polyline(satPos1, {color: colors[c]}).addTo(map);
                     var polyline = L.polyline(satPos2, {color: colors[c]}).addTo(map);
                     c=c+1
-                    if (c==10){
+                    if (c==colors.length){
                         c=0
                     }
 
@@ -246,7 +246,7 @@
                 else{
                     var polyline = L.polyline(satPos[i], {color: colors[c]}).addTo(map);
                     c=c+1
-                    if (c==10){
+                    if (c==colors.length){
                         c=0
                     }
                 }
@@ -290,14 +290,14 @@
                 markers.splice(i,1,marker)
             }
             k=k+1
-            setTimeout(moveSat, 30000);
+            setTimeout(moveSat, 5000);
         }  
         moveSat();     
     </script>
     <script type="text/javascript">
         constName="{{constName}}"
         if (constName=="GPS"){
-            t=30*60
+            t=60*60
         }
         else{
             t=10*60

@@ -231,7 +231,10 @@ def constellation(constellation_name):
             Mo = M * pi / 180  # Mean anomaly at ToA [rad]
 
             t=esec
-            T=600
+            if (constName=="GPS"):
+                T=7200
+            else:
+                T=600
             visSat=[]
             latSat=[]
             longSat=[]
@@ -254,7 +257,7 @@ def constellation(constellation_name):
                 lla[1] = round(lla[1], 10)
                 latSat.append(lla[0])
                 longSat.append(lla[1])
-                t=t+30
+                t=t+5
             vis.append(visSat)
             latmap.append(latSat)
             longmap.append(longSat)
