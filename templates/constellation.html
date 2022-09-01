@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constellation</title>
+    <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/04/Satellite-Download-PNG.png">
+    <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+    <script>
+        var map, osm, esri, terreno;
+        var controlCapas;
+        var controlEscala;
+        let markers = [];
+    
+        function init() {
+            userLLA=[]
+            userLLA.push(["{{userlat}}", "{{userlong}}"]);
+            long=[{% for item in longs %}
+                "{{ item }}",
+                {% endfor %}]
+
+            lat=[{% for item in lats %}
+                "{{ item }}",
+                {% endfor %}]
+                satPos=[];
+                for(var j=0; j<long.length; j++) {
+                        satPos.push([lat[j], long[j]]);
+                }
+
+            Xvis=[{% for item in xvis %}
+                "{{ item }}",
+                {% endfor %}]
+
+            Yvis=[{% for item in yvis %}
+                "{{ item }}",
+                {% endfor %}]
+                visPos=[];
+                for(var j=0; j<Xvis.length; j++) {
+                    visPos.push([Yvis[j],Xvis[j]]);
+                }
+            satName=[{% for item in satname %}
+                "{{ item }}",
+                {% endfor %}]
+
+            constName="{{constName}}"
+
+            vis=[{% for item in vis %}
+                {{ item }},
+                {% endfor %}]
+
+            if (constName=="STARLINK"){
+                var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
+                iconSize: [10,10], // size of the icon
+                });
+            }
+            else{
+                var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
+                iconSize: [40,40], // size of the icon
+                });
+            }
+            if (constName=="GPS"){
+                for (let i = 0; i < satName.length; i++) {
+                    let text = satName[i];
+                    const myArray = text.split(" ");
+                    console.log(myArray)
+                    if (myArray[2]==""){
+                        satName[i]= myArray[0]+" "+myArray[3]+myArray[4];
+                    }
+                    else{
+                        satName[i]= myArray[0]+" "+myArray[2]+myArray[3];
+                    }    
+                }
+            }
+
+
+            var southWest = L.latLng(-89.98155760646617, -180),
+            northEast = L.latLng(89.99346179538875, 180);
+            var bounds = L.latLngBounds(southWest, northEast);
+            map = L.map('map',{maxBounds: bounds,
+                maxBoundsViscosity: 1.0, fullscreenControl: true}).setView([20, 1.8382], 1);
+                /*Legend specific*/
+                var legend = L.control({ position: "topleft" });
+                
+                legend.onAdd = function(map) {
+                    var div = L.DomUtil.create("div", "legend");
+                    div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
+                    div.innerHTML += '<i style="background: black"></i><span>Satellite Position at plot time</span><br>';
+                    return div;
+                };
+                legend.addTo(map);
+
+    
+            esri = L.tileLayer(
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 7,
+                minZoom: 2,
+                attribution: 'Tiles © Esri',
+                noWrap: true,              //this is the crucial line!
+                bounds: [
+                    [-90, -180],
+                    [90, 180]]
+            });
+    
+            osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 7,
+                minZoom: 2,
+                attribution: 'OSM',
+                noWrap: true,              //this is the crucial line!
+                bounds: [
+                    [-90, -180],
+                    [90, 180]]
+            }).addTo(map);
+    
+            var baseMaps = {
+                "Satellite": esri,
+                "Default": osm
+            };
+
+            var latUser = parseFloat(userLLA[0][0]).toFixed(2);
+            var longUser = parseFloat(userLLA[0][1]).toFixed(2);
+            var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
+            var polygon = L.polygon(visPos).addTo(map);
+            for (let i = 0; i < satPos.length; i++) {
+                var latSat=parseFloat(satPos[i][0]).toFixed(2);
+                var longSat= parseFloat(satPos[i][1]).toFixed(2);
+                var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]);
+                if (vis[i]==1){
+                    markers[i] = L.marker(satPos[i],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
+                }
+                else{
+                    markers[i] = L.marker(satPos[i],{icon: satIcon}).bindPopup(new_popup).addTo(map);
+                }
+                
+            }
+
+            controlCapas = L.control.layers(baseMaps);
+            controlCapas.addTo(map);
+    
+            controlEscala = L.control.scale();
+            controlEscala.addTo(map);
+            moveISS();
+            console.log("ejecutada")
+        }
+        function moveISS() {
+            console.log("dentro")
+            for (let i = markers.length; i >= 0; i--) {
+                var latSat=parseFloat(i).toFixed(2);
+                var longSat= parseFloat(i).toFixed(2);
+                markers[i].setLatLng([50, 30]).update();
+            }
+            setTimeout(moveISS, 5000);
+        }        
+    </script>
+    <style>
+    body {
+        background-color:#383A3F;
+    }
+    canvas {
+        background: blue;
+    }
+    p {
+        color:white;
+        font-size:12pt;
+        font-family:arial,helvetica;
+        padding-left: 20px;
+      }
+    h1 {
+        color:white;
+        font-size:36pt;
+        font-family:verdana,arial;
+        text-decoration:underline;
+        text-align:center;
+        margin-block-start: 0.3em;
+        margin-block-end: 0.3em;
+      }
+    .btn {
+        display: block;
+        background:blue;
+        font-family:verdana,arial;
+        text-align: center;
+        width: 100%;
+        height: 60%;
+        color: white;
+        border-radius: 5px;
+        padding: 10px 5px;
+        box-shadow: rgba(0,0,0,0.9);
+        transition: all 200ms ease-in-out;
+        text-decoration: none;
+      }
+    .grid-container {
+        display: grid;
+        grid-template-columns: auto auto auto auto;
+        grid-gap: 10px;
+        padding: 10px;
+    }
+    .item1 {
+        grid-row: 1 / span 2;
+    }
+    #map { 
+        width: 68%;
+        height: 850px;
+        box-shadow: 5px 5px 5px #888;
+        margin: 0 auto;
+        display: block;
+    }
+    .legend {
+        padding: 6px 8px;
+        font: 14px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255, 255, 255, 0.3);
+        line-height: 24px;
+        color: black;
+    }
+    .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin: 0 8px 0 0;
+        opacity: 0.7;
+    }
+    </style>
+</head>
+<body onLoad="init()">
+    <h1>{{ constName }} Constellation</h1>
+    <div class="grid-container">
+        <div class="item1">
+            {% for entry in entries %}
+            <p>{{ entry }}</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div id="map">
+    </div>
+</body>
+</html>

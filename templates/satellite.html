@@ -115,9 +115,7 @@
             var polyline = L.polyline(satPos1, {color: 'red'}).addTo(map);
             var polyline2 = L.polyline(satPos2, {color: 'red'}).addTo(map);
             var polyline3 = L.polyline(satPos3, {color: 'red'}).addTo(map);
-            var polyline4 = L.polyline(visPos, {color: 'green'}).addTo(map);
 
-    
             controlCapas = L.control.layers(baseMaps);
             controlCapas.addTo(map);
     
@@ -325,15 +323,15 @@
     <div id="map">
     </div>
     <script>
-          let element = document.getElementById("button");
-          let text = document.getElementById('visText');
-          vis="{{vis}}"
-          console.log(vis)
-      
-          if (vis==1) {
-            element.removeAttribute("hidden");
-            text.hidden=true;
-          }
-      </script>
+        let element = document.getElementById("button");
+        let text = document.getElementById('visText');
+        vis="{{vis}}"
+        console.log(vis)
+    
+        if (vis==1) {
+          element.removeAttribute("hidden");
+          text.hidden=true;
+        }
+    </script>
 </body>
 </html>
