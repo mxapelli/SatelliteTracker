@@ -134,6 +134,10 @@
                 "{{ item }}",
                 {% endfor %}]
 
+        satID=[{% for item in satID %}
+                "{{ item }}",
+                {% endfor %}]
+
         
 
         const long= JSON.parse({{longs|tojson}});
@@ -276,13 +280,13 @@
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
                 }
                 else{
-                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<b>Blah blah Village</b><a href='http://www.cnn.com'>Test</a>");
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='http://127.0.0.1:5000/"+satID[i]+"' target='_blank'>"+satName[i]+"</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map);
                 }
                 markers.splice(i,1,marker)
             }
             k=k+1
-            setTimeout(moveSat, 5000);
+            setTimeout(moveSat, 30000);
         }  
         moveSat();     
     </script>

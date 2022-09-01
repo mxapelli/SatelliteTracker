@@ -188,11 +188,14 @@ def constellation(constellation_name):
         latmap = []
         longmap = []
         satname=[]
+        satID=[]
         vis = []
         amax=0
         for i in range(len(listSat)):
             name = listSat[i]['name']
             satname.append(name)
+            catnr = listSat[i]['catnr']
+            satID.append(catnr)
             epoch = listSat[i]['epoch']
             epochT = str(epoch).split("T")
             epochT[1] = epochT[1].split(".")
@@ -268,7 +271,7 @@ def constellation(constellation_name):
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
         text = [("You have selected the "+constName+" constellation"), ("The local time is: " + st)]
         print(longmap)
-        return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis,constName=constName,vis=json.dumps(vis))
+        return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis,constName=constName,vis=json.dumps(vis),satID=satID)
 
 
 @app.route('/<int:catnr>/doppler')
