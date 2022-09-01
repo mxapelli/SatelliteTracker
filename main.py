@@ -232,7 +232,7 @@ def constellation(constellation_name):
 
             t=esec
             if (constName=="GPS"):
-                T=7200
+                T=3600
             else:
                 T=600
             visSat=[]
@@ -266,14 +266,12 @@ def constellation(constellation_name):
                
         # Visibility Area of User
         visCoord = visibilidadObs(amax, latUser, longUser, altUser, name)
-        print(name)
         Xvis = visCoord[0]
         Yvis = visCoord[1]
         
         atime = time.localtime()
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
         text = [("You have selected the "+constName+" constellation"), ("The local time is: " + st)]
-        print(longmap)
         return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis,constName=constName,vis=json.dumps(vis),satID=satID)
 
 
