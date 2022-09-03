@@ -61,6 +61,7 @@ def index():
 
 @app.route('/<int:catnr>')
 def satellite(catnr):
+    start_time=time.time()
     xmap = []
     ymap = []
     zmap = []
@@ -152,6 +153,7 @@ def satellite(catnr):
     Xvis = visCoord[0]
     Yvis = visCoord[1]
 
+    print("Time to process",name,time.time()-start_time)
     atime = time.localtime()
     st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
     now = datetime.now()
@@ -164,6 +166,7 @@ def satellite(catnr):
 
 @app.route('/<constellation_name>')
 def constellation(constellation_name):
+    start_time=time.time()
     constName = constellation_name.upper()
     print("Selected constellation:",constName)
     Ge = 6.67384*10**(-11)  # Gravitational constant
@@ -184,6 +187,7 @@ def constellation(constellation_name):
         listSat.append({"name": sat["name"], "catnr": sat["noradID"], "epoch": sat["epoch"], "ecc": sat["ecc"], "incl": sat["incl"], "omega": sat["omega"], "w": sat["w"], "M": sat["M"],
                         "n": sat["n"]})
     print("The constellation contains:",len(listSat),"satellites.")
+    
     if len(listSat) == 0:
         print("Error satellite does not exist")
         return render_template('errorConst.html')
@@ -271,7 +275,7 @@ def constellation(constellation_name):
         visCoord = visibilidadObs(amax, latUser, longUser, altUser, name)
         Xvis = visCoord[0]
         Yvis = visCoord[1]
-        
+        print("Time to process",constName,time.time()-start_time)
         atime = time.localtime()
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
         text = [("You have selected the "+constName+" constellation")]
