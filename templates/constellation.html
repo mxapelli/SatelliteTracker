@@ -230,19 +230,14 @@
                     }
                 }
                 if (spl!=0){
-                    console.log(satName[i])
-                    console.log(spl)
                     const satPos1 = satPos[i].slice(0, spl);
                     const satPos2 = satPos[i].slice(-(satPos[i].length - (spl)));
-                    console.log(satPos1)
-                    console.log(satPos2)
                     var polyline = L.polyline(satPos1, {color: colors[c]}).addTo(map);
                     var polyline = L.polyline(satPos2, {color: colors[c]}).addTo(map);
                     c=c+1
                     if (c==colors.length){
                         c=0
                     }
-
                 }
                 else{
                     var polyline = L.polyline(satPos[i], {color: colors[c]}).addTo(map);
@@ -251,7 +246,6 @@
                         c=0
                     }
                 }
-
             }
             var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent(satName[i]);
             if (vis[i][0]==1){

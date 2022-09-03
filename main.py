@@ -64,7 +64,7 @@ def satellite(catnr):
     xmap = []
     ymap = []
     zmap = []
-    incTime = 30
+    incTime = 5
     Ge = 6.67384*10**(-11)  # Gravitational constant
     Me = 5.972*10**24
     if 'latUser' in session:
@@ -129,6 +129,7 @@ def satellite(catnr):
     # Check Visibility of satellite
     elev = []
     vis = []
+    visSat=[]
     for i in range(len(xmap)):
         satECEF = [xmap[i], ymap[i], zmap[i]]
         userECEF = LLA2ECEF(latUser, longUser, altUser)
@@ -138,7 +139,9 @@ def satellite(catnr):
         alpha = math.asin((-NED[2])/d)*180/pi
         if (alpha >= 10):
             elev.append(alpha)
-            vis.append(satECEF)
+            visSat.append(1)
+        else:
+            visSat.append(0)
     if len(elev) > 0:
         vis = 1
     else:
@@ -157,7 +160,7 @@ def satellite(catnr):
     print("session info", dt_string)
     text = [("You have selected the "+name+" satellite with Catalog Number: " +
              str(catnr))]
-    return render_template('satellite.html', entries=text, longs=longmap, lats=latmap, number=str(catnr), userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis, vis=vis)
+    return render_template('satellite.html', entries=text, longs=longmap, lats=latmap, number=str(catnr), userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis, vis=vis, visSat=visSat, satName=name)
 
 @app.route('/<constellation_name>')
 def constellation(constellation_name):
