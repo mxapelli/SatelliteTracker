@@ -1085,8 +1085,6 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
             long2.append(long2[-1])
         long3 = long2[::-1]
         long4 = [ -x for x in long3]
-        print(len(long4))
-        print(len(Yvis))
         Xvis = long4+long2
     visCoord = [Xvis, Yvis]
     return visCoord
