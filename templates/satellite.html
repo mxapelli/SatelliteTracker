@@ -8,121 +8,6 @@
     <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        var map, osm, esri, terreno;
-        var controlCapas;
-        var controlEscala;
-    
-        function init() {
-            userLLA=[]
-            userLLA.push(["{{userlat}}", "{{userlong}}"]);
-            long=[{% for item in longs %}
-                "{{ item }}",
-                {% endfor %}]
-
-            lat=[{% for item in lats %}
-                "{{ item }}",
-                {% endfor %}]
-                satPos1=[];
-                satPos2=[];
-                satPos3=[]
-                longProv=0;
-                newSat=0;
-                for(var j=0; j<long.length; j++) {
-                    if  (((longProv>0) && (long[j]<0))||((longProv<-140) && (long[j]>0))){
-                        newSat=newSat+1;
-                    }
-                    if (newSat==2){
-                        satPos3.push([lat[j], long[j]]);
-                    }
-                    if (newSat==1){
-                        satPos2.push([lat[j], long[j]]);
-                    }
-                    if (newSat==0){
-                        satPos1.push([lat[j], long[j]]);
-                    }
-                    longProv=long[j];
-                }
-
-            Xvis=[{% for item in xvis %}
-                "{{ item }}",
-                {% endfor %}]
-
-            Yvis=[{% for item in yvis %}
-                "{{ item }}",
-                {% endfor %}]
-                visPos=[];
-                for(var j=0; j<Xvis.length; j++) {
-                    visPos.push([Yvis[j],Xvis[j]]);
-                }
-
-            var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
-                iconSize: [40, 40], // size of the icon
-            });
-            var southWest = L.latLng(-89.98155760646617, -180),
-            northEast = L.latLng(89.99346179538875, 180);
-            var bounds = L.latLngBounds(southWest, northEast);
-            map = L.map('map',{maxBounds: bounds,
-                maxBoundsViscosity: 1.0}).setView([20, 1.8382], 2);
-                /*Legend specific*/
-                var legend = L.control({ position: "topleft" });
-                
-                legend.onAdd = function(map) {
-                    var div = L.DomUtil.create("div", "legend");
-                    div.innerHTML += '<i style="background: red"></i><span>Satellite Trajectory</span><br>';
-                    div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
-                    div.innerHTML += '<i style="background: black"></i><span>Satellite Position at plot time</span><br>';
-                    return div;
-                };
-                legend.addTo(map);
-
-            
-
-    
-            esri = L.tileLayer(
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 6,
-                minZoom: 2,
-                attribution: 'Tiles © Esri',
-                noWrap: true,              //this is the crucial line!
-                bounds: [
-                    [-90, -180],
-                    [90, 180]]
-            });
-    
-            osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 6,
-                minZoom: 2,
-                attribution: 'OSM',
-                noWrap: true,              //this is the crucial line!
-                bounds: [
-                    [-90, -180],
-                    [90, 180]]
-            }).addTo(map);
-    
-            var baseMaps = {
-                "Satellite": esri,
-                "Default": osm
-            };
-
-            var latUser = parseFloat(userLLA[0][0]).toFixed(2);
-            var longUser = parseFloat(userLLA[0][1]).toFixed(2);
-            var latSat=parseFloat(satPos1[0][0]).toFixed(2);
-            var longSat= parseFloat(satPos1[0][1]).toFixed(2);
-            var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
-            var markerSat = L.marker(satPos1[0],{icon: satIcon}).bindPopup("Sat position: Lat:"+latSat+" Long:"+longSat).addTo(map);
-            var polygon = L.polygon(visPos).addTo(map);
-            var polyline = L.polyline(satPos1, {color: 'red'}).addTo(map);
-            var polyline2 = L.polyline(satPos2, {color: 'red'}).addTo(map);
-            var polyline3 = L.polyline(satPos3, {color: 'red'}).addTo(map);
-
-            controlCapas = L.control.layers(baseMaps);
-            controlCapas.addTo(map);
-    
-            controlEscala = L.control.scale();
-            controlEscala.addTo(map);   
-        }
-    </script>
     <style>
     body {
         background-color:#383A3F;
@@ -192,13 +77,14 @@
     }
     </style>
 </head>
-<body onLoad="init()">
+<body>
     <h1>Satellite</h1>
     <div class="grid-container">
         <div class="item1">
             {% for entry in entries %}
             <p>{{ entry }}</p>
             {% endfor %}
+            <p> Locale time is <span id="time"> </span></p>
             <p id="visText">The satellite will not be visible during their next orbit!</p> 
         </div>
         <div class="item2" id="button" hidden>
@@ -207,6 +93,131 @@
     </div>
     <div id="map">
     </div>
+    <script>
+        var map, osm, esri, terreno;
+        var controlCapas;
+        var controlEscala;
+
+        var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
+            iconSize: [40, 40], // size of the icon
+        });
+        var southWest = L.latLng(-89.98155760646617, -180),
+        northEast = L.latLng(89.99346179538875, 180);
+        var bounds = L.latLngBounds(southWest, northEast);
+    
+        userLLA=[]
+        userLLA.push(["{{userlat}}", "{{userlong}}"]);
+        long=[{% for item in longs %}
+            "{{ item }}",
+            {% endfor %}]
+
+        lat=[{% for item in lats %}
+            "{{ item }}",
+            {% endfor %}]
+        satPos1=[];
+        satPos2=[];
+        satPos3=[]
+        longProv=0;
+        newSat=0;
+        for(var j=0; j<long.length; j++) {
+            if  (((longProv>0) && (long[j]<0))||((longProv<-140) && (long[j]>0))){
+                    newSat=newSat+1;
+            }
+            if (newSat==2){
+                satPos3.push([lat[j], long[j]]);
+            }
+            if (newSat==1){
+                satPos2.push([lat[j], long[j]]);
+            }
+            if (newSat==0){
+                satPos1.push([lat[j], long[j]]);
+            }
+            longProv=long[j];
+        }
+
+        Xvis=[{% for item in xvis %}
+                "{{ item }}",
+                {% endfor %}]
+
+        Yvis=[{% for item in yvis %}
+                "{{ item }}",
+                {% endfor %}]
+
+        visPos=[];
+        for(var j=0; j<Xvis.length; j++) {
+            visPos.push([Yvis[j],Xvis[j]]);
+        }
+
+        map = L.map('map',{maxBounds: bounds, maxBoundsViscosity: 1.0}).setView([20, 1.8382], 2);
+        /*Legend specific*/
+        var legend = L.control({ position: "topleft" });
+                
+        legend.onAdd = function(map) {
+            var div = L.DomUtil.create("div", "legend");
+            div.innerHTML += '<i style="background: red"></i><span>Satellite Trajectory</span><br>';
+            div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
+            div.innerHTML += '<i style="background: black"></i><span>Satellite Position at locale time</span><br>';
+            return div;
+        };
+        legend.addTo(map);
+
+            
+
+    
+        esri = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 6,
+            minZoom: 2,
+            attribution: 'Tiles © Esri',
+            noWrap: true,              //this is the crucial line!
+            bounds: [
+                [-90, -180],
+                [90, 180]]
+            });
+    
+        osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 6,
+            minZoom: 2,
+            attribution: 'OSM',
+            noWrap: true,              //this is the crucial line!
+            bounds: [
+                [-90, -180],
+                [90, 180]]
+        }).addTo(map);
+    
+        var baseMaps = {
+            "Satellite": esri,
+            "Default": osm
+        };
+
+        var latUser = parseFloat(userLLA[0][0]).toFixed(2);
+        var longUser = parseFloat(userLLA[0][1]).toFixed(2);
+        var latSat=parseFloat(satPos1[0][0]).toFixed(2);
+        var longSat= parseFloat(satPos1[0][1]).toFixed(2);
+        var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
+        var markerSat = L.marker(satPos1[0],{icon: satIcon}).bindPopup("Sat position: Lat:"+latSat+" Long:"+longSat).addTo(map);
+        var polygon = L.polygon(visPos).addTo(map);
+        var polyline = L.polyline(satPos1, {color: 'red'}).addTo(map);
+        var polyline2 = L.polyline(satPos2, {color: 'red'}).addTo(map);
+        var polyline3 = L.polyline(satPos3, {color: 'red'}).addTo(map);
+
+        controlCapas = L.control.layers(baseMaps);
+        controlCapas.addTo(map);
+    
+        controlEscala = L.control.scale();
+        controlEscala.addTo(map); 
+        
+        
+        function refreshTime() {
+            const timeDisplay = document.getElementById("time");
+            const dateString = new Date().toLocaleString();
+            const formattedString = dateString.replace(", ", " - ");
+            timeDisplay.textContent = formattedString;
+            setTimeout(refreshTime, 1000);
+        }
+        refreshTime();
+        
+    </script>
     <script>
         let element = document.getElementById("button");
         let text = document.getElementById('visText');

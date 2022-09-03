@@ -207,7 +207,7 @@
         legend.onAdd = function(map) {
                     var div = L.DomUtil.create("div", "legend");
                     div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
-                    div.innerHTML += '<i style="background: black"></i><span>Satellite Position at plot time</span><br>';
+                    div.innerHTML += '<i style="background: black"></i><span>Satellite Position at locale time</span><br>';
                     return div;
         };
         legend.addTo(map);
