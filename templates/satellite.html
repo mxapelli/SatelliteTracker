@@ -179,7 +179,7 @@
         padding: 6px 8px;
         font: 14px Arial, Helvetica, sans-serif;
         background: white;
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.5);
         line-height: 24px;
         color: black;
     }
@@ -205,121 +205,6 @@
             <a href="{{number}}/doppler" class="btn">View Visibility Analysis</a>   
         </div>
     </div>
-    <!--<canvas id="myChart"></canvas>
-        <script>
-            const pointImage=new Image(50,50)
-            pointImage.src= 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png'
-            //https://cdn-icons-png.flaticon.com/512/1679/1679957.png
-            
-            userLLA=[]
-            userLLA.push({x: "{{userlong}}",y: "{{userlat}}"});
-            long=[{% for item in longs %}
-                "{{ item }}",
-                {% endfor %}]
-
-            lat=[{% for item in lats %}
-                "{{ item }}",
-                {% endfor %}]
-                satPos=[];
-                for(var j=1; j<long.length; j++) {
-                    satPos.push({x: long[j],y: lat[j]});
-                }
-
-            wordlLat=[{% for item in worldLa %}
-                "{{ item }}",
-                {% endfor %}]
-
-            worldLong=[{% for item in worldLo %}
-                "{{ item }}",
-                {% endfor %}]
-                worldPos=[];
-                for(var j=0; j<wordlLat.length; j++) {
-                    worldPos.push({x: worldLong[j],y: wordlLat[j]});
-                }
-
-            Xvis=[{% for item in xvis %}
-                "{{ item }}",
-                {% endfor %}]
-
-            Yvis=[{% for item in yvis %}
-                "{{ item }}",
-                {% endfor %}]
-                visPos=[];
-                for(var j=0; j<wordlLat.length; j++) {
-                    visPos.push({x: Xvis[j],y: Yvis[j]});
-                }
-            const data = {
-              datasets: [     
-            {
-                label: 'User Visibility',
-                backgroundColor: 'white',
-                borderColor: 'white',
-                data: visPos,
-                pointRadius:2,
-            },        
-            {
-                label: 'Actual Position',
-                backgroundColor: 'black',
-                borderColor: 'black',
-                data: [{x: long[0],y: lat[0]}],
-                pointRadius: 7,
-                pointStyle: pointImage
-            },
-            {
-                label: 'Sat Position',
-                backgroundColor: 'rgb(250, 32, 32)',
-                borderColor: 'rgb(250, 32, 32)',
-                data: satPos,
-                pointRadius: 2,
-              },
-              {
-                label: 'User Position',
-                backgroundColor: 'yellow',
-                borderColor: 'yellow',
-                data: userLLA,
-                pointRadius: 8,
-                pointStyle: "rectRot"
-              },
-              {
-                label: 'World',
-                backgroundColor: 'rgb(0, 225, 0)',
-                borderColor: 'rgb(0, 225, 0)',
-                data: worldPos,
-                pointRadius: 2,
-              }]
-            };
-          
-            const config = {
-              type: 'scatter',
-              data: data,
-              options: {
-                plugins: {
-                    legend: {
-                        labels: {
-                            filter: item => {return item.text != "World"},
-                            color: "white",
-                        }
-                    },
-                },
-                events: [],
-                scales: {
-                    x: {
-                            max : 180,    
-                            min : -180,
-                            ticks: { color: 'white'},
-                            grid: {color: 'white'},
-                            title: {text: 'Longitude',color: 'white', display: true, align: 'center', font: {size:15}},
-                        },
-                    y: {
-                            max : 90,    
-                            min : -90,
-                            ticks: { color: 'white'},
-                            grid: {color: 'white'},
-                            title: {text: 'Latitude',color: 'white', display: true, align: 'center', font: {size:15}},
-                }}
-            }};
-            const myChart = new Chart(document.getElementById('myChart'),config);
-        </script>-->
     <div id="map">
     </div>
     <script>

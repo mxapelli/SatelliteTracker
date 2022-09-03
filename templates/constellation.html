@@ -66,7 +66,7 @@
         padding: 6px 8px;
         font: 14px Arial, Helvetica, sans-serif;
         background: white;
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.9);
         line-height: 24px;
         color: black;
     }
@@ -86,6 +86,7 @@
             {% for entry in entries %}
             <p>{{ entry }}</p>
             {% endfor %}
+            <p> Locale time is <span id="time"> </span></p>
         </div>
     </div>
     <div id="map">
@@ -201,7 +202,7 @@
 
         
         /*Legend specific*/
-        var legend = L.control({ position: "topleft" });
+        var legend = L.control({ position: "topright" });
                 
         legend.onAdd = function(map) {
                     var div = L.DomUtil.create("div", "legend");
@@ -292,7 +293,16 @@
             k=k+1
             setTimeout(moveSat, 5000);
         }  
-        moveSat();     
+        moveSat();
+        
+        function refreshTime() {
+            const timeDisplay = document.getElementById("time");
+            const dateString = new Date().toLocaleString();
+            const formattedString = dateString.replace(", ", " - ");
+            timeDisplay.textContent = formattedString;
+            setTimeout(refreshTime, 1000);
+        }
+        refreshTime();
     </script>
     <script type="text/javascript">
         constName="{{constName}}"

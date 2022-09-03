@@ -39,53 +39,6 @@
     {% for entry in entries %}
        <p>{{ entry }}</p>
     {% endfor %}
-    <!--<div>
-      <canvas id="DopplerChart" ></canvas>
-          <script>
-              fDoppler=[{% for f in doppler %}
-                  "{{ f }}",
-                  {% endfor %}]
-                  Doppler=[];
-                  for(var j=0; j<fDoppler.length; j++) {
-                      Doppler.push({x: j*30,y:fDoppler[j] });
-                  }
-              const data = {
-                datasets: [             
-              {
-                  label: 'Doppler Frequency',
-                  backgroundColor: 'rgb(250, 32, 32)',
-                  borderColor: 'rgb(250, 32, 32)',
-                  data: Doppler,
-                  pointRadius: 2,
-                },]
-              };
-            
-              const config = {
-                type: 'scatter',
-                data: data,
-                options: {
-                  plugins: {
-                    legend: {
-                        labels: {
-                            color: "white",
-                        }
-                    },
-                  },
-                  scales: {
-                    x: {
-                      title: {text: 'Time',color: 'white', display: true, align: 'center', font: {size:15}},
-                      ticks: { color: 'white'},
-                      grid: {color: 'white'}
-                        },
-                    y: {    
-                      title: {text: 'Doppler Freq.',color: 'white', display: true, align: 'center', font: {size:15}},
-                      ticks: { color: 'white'},
-                      grid: {color: 'white'}
-                }}
-              }};
-              const DopplerChart = new Chart(document.getElementById('DopplerChart'),config);
-      </script>
-    </div>-->
     <img src="data:image/png;base64, {{ plot_url }}">
     <img src="data:image/png;base64, {{ plotDoppler_url }}">
 </body>
