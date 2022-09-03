@@ -148,6 +148,10 @@
             visPos.push([Yvis[j],Xvis[j]]);
         }
 
+        vis=[{% for item in vis %}
+            "{{ item }}",
+            {% endfor %}]
+
         map = L.map('map',{maxBounds: bounds, maxBoundsViscosity: 1.0}).setView([20, 1.8382], 2);
         /*Legend specific*/
         var legend = L.control({ position: "topleft" });

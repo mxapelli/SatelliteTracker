@@ -156,7 +156,7 @@ def satellite(catnr):
     session['time'] = dt_string
     print("session info", dt_string)
     text = [("You have selected the "+name+" satellite with Catalog Number: " +
-             str(catnr)), ("The local time is: " + st)]
+             str(catnr))]
     return render_template('satellite.html', entries=text, longs=longmap, lats=latmap, number=str(catnr), userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis, vis=vis)
 
 @app.route('/<constellation_name>')
@@ -271,7 +271,7 @@ def constellation(constellation_name):
         
         atime = time.localtime()
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
-        text = [("You have selected the "+constName+" constellation"), ("The local time is: " + st)]
+        text = [("You have selected the "+constName+" constellation")]
         return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis,constName=constName,vis=json.dumps(vis),satID=satID)
 
 
