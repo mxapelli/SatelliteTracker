@@ -1058,7 +1058,7 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
         long3 = []
         for latm in range(round(latvis[0]), round(latvis[-1])):
             longprov = []
-            for i in range(-720, 720):
+            for i in range(0, 720):
                 longV = i*pi/720
                 longV = longV*180/pi
                 satECEF = LLA2ECEF(latm, longV, r)
@@ -1070,8 +1070,10 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
                 if (alpha >= 10):
                     longprov.append(longV)
             if len(longprov) >= 1:
-                long2.append(longprov[0])
-                long3.append(longprov[-1])
+                long2.append(longprov[-1])
+                if (long2[-1]>=179.5):
+                    break
+
         Xvis = []
         Yvis = []
         for n in range(round(latvis[0]), round(latvis[-1])):
@@ -1079,8 +1081,13 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
         Yvis = Yvis[::-1]
         for n in range(round(latvis[0]), round(latvis[-1])):
             Yvis.append(n)
-        long2 = long2[::-1]
-        Xvis = long2+long3
+        for n in range(99,int(len(Yvis)/2)):
+            long2.append(long2[-1])
+        long3 = long2[::-1]
+        long4 = [ -x for x in long3]
+        print(len(long4))
+        print(len(Yvis))
+        Xvis = long4+long2
     visCoord = [Xvis, Yvis]
     return visCoord
 
