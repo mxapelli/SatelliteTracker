@@ -67,6 +67,27 @@
         transition: all 200ms ease-in-out;
         text-decoration: none;
       }
+      .btn2 {
+        background:blue;
+        color: white;
+        width: 25%;
+        justify-content: center;
+        align-items: center;
+        padding: 15px 20px;
+        margin: 5px;
+        display: flex;
+        border-radius: 5px;
+        box-shadow: rgba(0,0,0,0.9);
+        transition: all 200ms ease-in-out;
+        text-decoration: none;
+      }
+      .container2 {
+        display:flex;
+        /* items are centered along the line */
+        justify-content: center;
+        /* center: items are centered in the cross-axis */
+        align-items: center;
+      }
       .card {
         background:#1F2124;
         border-color: white;
@@ -85,6 +106,17 @@
           color: white;
           opacity: 1; /* Firefox */
       }
+      .flex-container {
+          display: flex;
+        }
+
+      .flex-child {
+        flex: 1;
+      }  
+
+      .flex-child:first-child {
+        margin-right: 20px;
+      } 
 
       </style>
   </head>
@@ -114,11 +146,29 @@
       getLocation();
     </script>
     <h1>Welcome to Satellite Tracker!</h1>
-    <h4>You allow us to use your real Geolocation?</h4>
-    <form action = "/" method = "post">
-      <p><input type = "hidden" name="nm" id="demo"/></p>
-      <h5><input type = "submit" value = "Allow use of geolocation" class="btn"/></h5>
-    </form> 
+    
+    <div class="flex-container">
+      
+      <div class="flex-child magenta">
+        <h4>You allow us to use your real Geolocation?</h4>
+        <form action = "/" method = "post">
+          <p><input type = "hidden" name="nm" id="demo"/></p>
+          <h5><input type = "submit" value = "Allow use of geolocation" class="btn"/></h5>
+        </form> 
+      </div>
+      
+      <div class="flex-child green">
+        <h4 style="text-align:center">Select a constellation to view all their satellites</h4>
+        <div class="container2">
+          <a href="gps" target='_blank' class="btn2">GPS</a>
+          <a href="iridium" target='_blank' class="btn2">IRIDIUM</a>
+          <a href="starlink" target='_blank' class="btn2">STARLINK</a>
+        </div>       
+      </div>
+      </div>
+      
+    </div>
+    
 
     <input class="search" id="filter" type="search" placeholder="Search" aria-label="Search" autocomplete="off">
 
@@ -130,7 +180,7 @@
                 <div class="card-body">
                     <h2 class="card-title">{{ sats['OBJECT_NAME']}}</h2>
                     <h3 class="card-text">Satellite ID: {{ sats['NORAD_CAT_ID']}}</h3>
-                    <a href="{{ sats['NORAD_CAT_ID']}}" class="btn">View</a>
+                    <a href="{{ sats['NORAD_CAT_ID']}}" target='_blank' class="btn">View</a>
                 </div>
                </div>
             </div>
