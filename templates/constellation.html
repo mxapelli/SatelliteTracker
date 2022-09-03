@@ -177,7 +177,7 @@
 
         if (constName=="STARLINK"){
                 var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
-                iconSize: [10,10], // size of the icon
+                iconSize: [15,15], // size of the icon
                 });
         }
         else{
@@ -264,17 +264,19 @@
 
         k=0
         function moveSat() {
+            console.log(satPos[0].length)
             for (let i = 0; i < markers.length; i++) {
                 map.removeLayer(markers[i])
-                if (vis[i][k]==1 && k>=1 && vis[i][k-1]==0){
+                if (vis[i][k]==1 && k>=1 && vis[i][k-1]==0  && constName!="STARLINK"){
                     var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='http://127.0.0.1:5000/"+satID[i]+"' target='_blank'>"+satName[i]+" IN"+"</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
+                    
                 }
                 else if(k==0 && vis[i][k]==1 && constName!="STARLINK"){
                     var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='http://127.0.0.1:5000/"+satID[i]+"' target='_blank'>"+satName[i]+"</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
                 }
-                else if(vis[i][k]==0 && k>=1 && vis[i][k-1]==1){
+                else if(vis[i][k]==0 && k>=1 && vis[i][k-1]==1&& constName!="STARLINK"){
                     var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='http://127.0.0.1:5000/"+satID[i]+"' target='_blank'>"+satName[i]+" OUT"+"</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
                 }
@@ -290,11 +292,17 @@
         moveSat();
         
         function refreshTime() {
+            if (constName=="STARLINK"){
+                t=10
+            }
+            else{
+                t=5
+            }
             const timeDisplay = document.getElementById("time");
             const dateString = new Date().toLocaleString();
             const formattedString = dateString.replace(", ", " - ");
             timeDisplay.textContent = formattedString;
-            setTimeout(refreshTime, 1000);
+            setTimeout(refreshTime, t*1000);
         }
         refreshTime();
     </script>

@@ -240,8 +240,14 @@ def constellation(constellation_name):
             t=esec
             if (constName=="GPS"):
                 T=3600
-            else:
+                incTime=5
+            if (constName=="STARLINK"):
                 T=600
+                incTime=10
+            if (constName=="IRIDIUM"):
+                T=600
+                incTime=5
+
             visSat=[]
             latSat=[]
             longSat=[]
@@ -264,13 +270,15 @@ def constellation(constellation_name):
                 lla[1] = round(lla[1], 10)
                 latSat.append(lla[0])
                 longSat.append(lla[1])
-                t=t+5
+                t=t+incTime
             vis.append(visSat)
-            latmap.append(latSat)
             longmap.append(longSat)
+            latmap.append(latSat)
+            
             if (a>amax):
                 amax=a
-               
+        
+
         # Visibility Area of User
         visCoord = visibilidadObs(amax, latUser, longUser, altUser, name)
         Xvis = visCoord[0]
