@@ -14,41 +14,48 @@ import base64
 from datetime import datetime,timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 
+
 import time
 import math
 import numpy
 import requests
 
 
+
 load_dotenv()  # use dotenv to hide sensitive credential as environment variables
 DATABASE_URL = f'mongodb+srv://MXapelli:{os.environ.get("passwordDB")}'\
-    '@mongo-heroku-cluster.aiiqhhv.mongodb.net/satellites?retryWrites=true&w=majority'  # get connection url from environment
+    '@mongo-heroku-cluster.aiiqhhv.mongodb.net/satellites?retryWrites=true&w=majority'  # Get connection url from environment
 
-# establish connection with database
+# Establish connection with database
 client = pymongo.MongoClient(DATABASE_URL)
 mongo_db = client.db
 
 app = Flask(__name__)
 
+#
 app.secret_key = os.environ.get("passwordSess")
 
+#Global variables
 pi = math.pi
+Ge = 6.67384*10**(-11)  # Gravitational constant
+Me = 5.972*10**24 # Mass of earth
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
+    # POST method to get coordinates from user
     if request.method == 'POST':
         coordsData = request.form['nm']
         print("Coordenadas ", coordsData)
         if isinstance(coordsData, str):
-            coords = coordsData.split("/")
-            urlAlt = "https://api.open-elevation.com/api/v1/lookup?locations=" + \
-                coords[0]+","+coords[1]
-            result = requests.get(urlAlt)
-            alt = result.json()
-            altM = alt["results"][0]['elevation']
-            session['latUser'] = float(coords[0])
-            session['longUser'] = float(coords[1])
-            session['altUser'] = float(altM)
+            if "/" in coordsData:
+                coords = coordsData.split("/")
+                urlAlt = "https://api.open-elevation.com/api/v1/lookup?locations=" + coords[0]+","+coords[1]
+                result = requests.get(urlAlt)
+                alt = result.json()
+                altM = alt["results"][0]['elevation']
+                session['latUser'] = float(coords[0])
+                session['longUser'] = float(coords[1])
+                session['altUser'] = float(altM)
             return redirect(url_for('index'))
 
     jsonSat = []
@@ -66,28 +73,28 @@ def satellite(catnr):
     ymap = []
     zmap = []
     incTime = 5
-    Ge = 6.67384*10**(-11)  # Gravitational constant
-    Me = 5.972*10**24
+
+    #Obtaining LLA coordinates from user session
     if 'latUser' in session:
         latUser = session['latUser']
         longUser = session['longUser']
         altUser = session['altUser']
     else:
+        # Default coordinates of EETAC
         latUser = 41.2757116961354
         longUser = 1.9872286269285848
         altUser = 4
 
     sat = mongo_db.satellites.find_one({"noradID": catnr})
-    if sat is None:
+
+    if sat is None: # Handling error of non-existing satellite
         print("Error satellite does not exist")
         return render_template('error.html')
 
+    #Getting data of satellite
     name = sat['name']
     print("The user has selected satellite: ", name)
     epoch = sat['epoch']
-    epochT = str(epoch).split("T")
-    epochT[1] = epochT[1].split(".")
-    hour = epochT[1][0]
     incl = sat['incl']
     omega = sat['omega']
     ecc = sat['ecc']
@@ -95,12 +102,8 @@ def satellite(catnr):
     M = sat['M']
     n = sat['n']
 
-    # TIME TO TOA
-    date = epochT[0]
-    x = time.strptime(date+" " + hour, "%Y-%m-%d %H:%M:%S")
-    s = x.tm_yday
-    s = s+x.tm_hour/24+x.tm_min/(24*60)+x.tm_sec/(24*60*60)
-    ToA = s
+    # Computing time to ToA
+    ToA = time2toa(epoch)
     result = esecGAST(ToA)
     esec = result[0]
     GASTdegToA = result[1]
@@ -118,7 +121,7 @@ def satellite(catnr):
     w = w * pi / 180  # argument of perigee [rad]
     Mo = M * pi / 180  # Mean anomaly at ToA [rad]
 
-    # Groundtrack for NT periods
+    # Groundtrack for period T in seconds
     coordinates = computeCoordinates(esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime)
     xmap = coordinates[0]
     ymap = coordinates[1]
@@ -167,10 +170,12 @@ def satellite(catnr):
 @app.route('/<constellation_name>')
 def constellation(constellation_name):
     start_time=time.time()
+
     constName = constellation_name.upper()
+
     print("Selected constellation:",constName)
-    Ge = 6.67384*10**(-11)  # Gravitational constant
-    Me = 5.972*10**24
+
+    #Getting LLA Coordinates from user session
     if 'latUser' in session:
         latUser = session['latUser']
         longUser = session['longUser']
@@ -188,8 +193,8 @@ def constellation(constellation_name):
                         "n": sat["n"]})
     print("The constellation contains:",len(listSat),"satellites.")
     
-    if len(listSat) == 0:
-        print("Error satellite does not exist")
+    if len(listSat) == 0: #Handling error of non-existing constellation
+        print("Error constellation does not exist")
         return render_template('errorConst.html')
     else:
         latmap = []
@@ -199,14 +204,12 @@ def constellation(constellation_name):
         vis = []
         amax=0
         for i in range(len(listSat)):
+            #Getting data of every satellite
             name = listSat[i]['name']
             satname.append(name)
             catnr = listSat[i]['catnr']
             satID.append(catnr)
             epoch = listSat[i]['epoch']
-            epochT = str(epoch).split("T")
-            epochT[1] = epochT[1].split(".")
-            hour = epochT[1][0]
             incl = listSat[i]['incl']
             omega = listSat[i]['omega']
             ecc = listSat[i]['ecc']
@@ -214,12 +217,8 @@ def constellation(constellation_name):
             M = listSat[i]['M']
             n = listSat[i]['n']
 
-            # TIME TO TOA
-            date = epochT[0]
-            x = time.strptime(date+" " + hour, "%Y-%m-%d %H:%M:%S")
-            s = x.tm_yday
-            s = s+x.tm_hour/24+x.tm_min/(24*60)+x.tm_sec/(24*60*60)
-            ToA = s
+            #Getting time to ToA and GAST degrees at ToA
+            ToA = time2toa(epoch)
             result = esecGAST(ToA)
             esec = result[0]
             GASTdegToA = result[1]
@@ -292,9 +291,6 @@ def constellation(constellation_name):
 
 @app.route('/<int:catnr>/satdata')
 def doppler(catnr):
-    pi = math.pi
-    Ge = 6.67384*10**(-11)  # Gravitational constant
-    Me = 5.972*10**24
     if 'latUser' in session:
         latUser = session['latUser']
         longUser = session['longUser']
@@ -316,9 +312,6 @@ def doppler(catnr):
 
     print("The user has selected visibility of satellite: ", name)
     epoch = sat['epoch']
-    epochT = str(epoch).split("T")
-    epochT[1] = epochT[1].split(".")
-    hour = epochT[1][0]
     incl = sat['incl']
     omega = sat['omega']
     ecc = sat['ecc']
@@ -326,12 +319,8 @@ def doppler(catnr):
     M = sat['M']
     n = sat['n']
 
-    # TIME TO TOA
-    date = epochT[0]
-    x = time.strptime(date+" " + hour, "%Y-%m-%d %H:%M:%S")
-    s = x.tm_yday
-    s = s+x.tm_hour/24+x.tm_min/(24*60)+x.tm_sec/(24*60*60)
-    ToA = s
+    #Getting time to ToA and
+    ToA=time2toa(epoch)
     result = esecGAST(ToA)
     esec = result[0]
     GASTdegToA = result[1]
@@ -350,8 +339,7 @@ def doppler(catnr):
     Mo = M * pi / 180  # Mean anomaly at ToA [rad]
 
     # Groundtrack for NT periods
-    coordinates = computeCoordinates(
-        esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime)
+    coordinates = computeCoordinates(esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime)
     xmap = coordinates[0]
     ymap = coordinates[1]
     zmap = coordinates[2]
@@ -650,8 +638,7 @@ def doppler(catnr):
 
 
 
-
-    # New Radial speed to Satellite
+    # New plot Radial speed of Satellite
     # New plot4
     img4 = BytesIO()
 
@@ -690,7 +677,7 @@ def doppler(catnr):
     text4 = [("Maximum distance to satellite: " + str(round(max(dSatObs)/1000, 2)) + " km"),("Minimum distance to satellite: " + str(round(min(dSatObs)/1000, 2)) + " km")]
     return render_template('satAnalysis.html', entries1=text1, entries2=text2,speed=text3,distance=text4,doppler=fDReal, plot_url=plot_url, plotDoppler_url=plotDoppler_url, plotDistance_url=plotDistance_url,plotRadialSpeed_url=plotRadialSpeed_url,satname=name)
 
-
+# Function to update database with new satellite data
 def dbUpdate():
     satsDB = []
     satsCelestrak = []
@@ -781,14 +768,13 @@ def dbUpdate():
     t = time.time()-start_time
     print("Database updated at", now, "It took",t, "seconds to complete the task.")
 
-
+# Scheduler to program db update every 10 minutes
 scheduler = BackgroundScheduler()
 job = scheduler.add_job(dbUpdate, 'interval', minutes=10)
 scheduler.start()
 
-
+#Function that computes GAST [deg] at current time + esec [sec]
 def GAST(esec):
-    # Computes GAST [deg] at current time + esec [sec]
     # esec = ToA time in secs. from/to now (esec < 0 means ToA is in the past)
     # Find Julian Date now
     unixepoch = 2440587.5  # JD at unix epoch: 0h (UTC) 1/1/1970
@@ -817,7 +803,7 @@ def GAST(esec):
     GASTdeg = 15 * 1.0027855 * GASTh
     return GASTdeg
 
-
+#Function that computes esec and GAST from a satelite
 def esecGAST(ToA):
     unixepoch = 2440587.5  # JD at unix epoch: 0h (UTC) 1/1/1970
     unixseconds = time.time()
@@ -828,7 +814,7 @@ def esecGAST(ToA):
     MJ2022 = 59580
     J2022 = MJ2022 + 2400000.5  # JD on 1/1/2022 at 00:00 UTC
     JToA = J2022 + ToA - 1  # ToA in JD
-    esec = 86400 * (JD - JToA)  # temps transcorregut des de'l ToA en segons
+    esec = 86400 * (JD - JToA)  # Time since ToA in seconds
 
     # Find GAST in degrees at ToA
     J2000 = 2451545.0  # epoch is 1/1/2000 at 12:00 UTC
@@ -841,6 +827,7 @@ def esecGAST(ToA):
     GAST = 6.697374558 + 0.06570982441908 * whole_days_since_epoch + 1.00273790935 * \
         hours_since_midnight + 0.000026 * centuries_since_epoch**2  # GAST in hours from ?
     GASTh = GAST % 24  # GAST in hours at ToA
+
     # GAST in degrees at ToA (approx. 361º/24h)
     GASTdegToA = 15 * 1.0027855 * GASTh
     esecGAST = []
@@ -848,7 +835,7 @@ def esecGAST(ToA):
     esecGAST.append(GASTdegToA)
     return esecGAST
 
-
+#Function that transforms ECEF coordinates to ECI coordinates
 def ECEF2ECI(X, Y, Z, B):
     ECI = []
     Xe = math.cos(B)*X-math.sin(B)*Y
@@ -859,7 +846,7 @@ def ECEF2ECI(X, Y, Z, B):
     ECI.append(Ze)
     return ECI
 
-
+#Function that transforms LLA coordinates to ECEF coordinates
 def LLA2ECEF(lat, lon, alt):
     a = 6378137
     e2 = 0.00669437999014
@@ -878,6 +865,7 @@ def LLA2ECEF(lat, lon, alt):
     ecef = [x, y, z]
     return ecef
 
+#Function that transforms ECEF coordinates to LLA coordinates
 def ECEF2LLA(x,y,z):
     lla=[]
     # LLA coordinates [lat, lon, alt] = ECEF2LLA(x, y, z)
@@ -908,11 +896,10 @@ def ECEF2LLA(x,y,z):
     lla.append(ALT)
     return lla
 
-
+#Function that omputes ECEF coordinates from  Kepler orbital elements
 def Kepler2ECEF(t, a, io, ecc, Oo, dO, w, Mo, n):
     # ECEF coordinates
     ecef=[]
-    # Kepler2ECEF ##[x, y, z] = Kepler2ECEF(a, io, e, Oo, dO, w, Mo, n, t)
     M = Mo + n * t  # Mean anomaly now [rad]
     # Solve Keppler equation for eccentric anomally iteratively
     # Loop is exited when we reach the desired tolerance
@@ -932,7 +919,7 @@ def Kepler2ECEF(t, a, io, ecc, Oo, dO, w, Mo, n):
     # Cartesian coordinates within the orbital plane
     u = v + w
     r = a * (1 - ecc * math.cos(E))
-    # corrected right ascension (7.2921151467e-5 = rate of Earth rotation [rad/s])
+    # Corrected right ascension (7.2921151467e-5 = rate of Earth rotation [rad/s])
     O = Oo - 7.2921151467e-5 * t + dO * t
     xp = r * math.cos(u)
     yp = r * math.sin(u)
@@ -948,7 +935,7 @@ def Kepler2ECEF(t, a, io, ecc, Oo, dO, w, Mo, n):
 
     return ecef
 
-
+#Function that transforms ECEF coordinates to NED
 def ECEF2NED(ECEF, phi, lamda):
 
     # 1) Rotation Matrix from NED to ECEF: ECEF = M*NED
@@ -956,15 +943,13 @@ def ECEF2NED(ECEF, phi, lamda):
     M = numpy.array([[(-math.sin(phi)*math.cos(lamda)), (-math.sin(lamda)), (-math.cos(phi)*math.cos(lamda))], [(-math.sin(phi)
                     * math.sin(lamda)), (math.cos(lamda)), (-math.cos(phi)*math.sin(lamda))], [(math.cos(phi)), 0, (-math.sin(phi))]], dtype='f')
     # 2) Compute NED coordinates
-    # print(M[0][0])
-    # print(r)
     ECEFt = numpy.array([ECEF]).T
     invM = numpy.linalg.inv(M)
 
     NED = numpy.matmul(invM, ECEFt)
     return NED
 
-
+#Function tha computes the coordinates of a satellite
 def computeCoordinates(esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime):
     t = esec
     NT = 1
@@ -977,47 +962,17 @@ def computeCoordinates(esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime):
     altmap = []
     R = []
     while t < esec + T * NT:
+        #Getting all the ECEF coordinates
+        ecef=Kepler2ECEF(t, a, io, ecc, Oo, dO, w, Mo, n)
 
-        # ECEF coordinates
-        # Kepler2ECEF ##[x, y, z] = Kepler2ECEF(a, io, e, Oo, dO, w, Mo, n, t)
-        M = Mo + n * t  # Mean anomaly now [rad]
-        # Solve Keppler equation for eccentric anomally iteratively
-        # Loop is exited when we reach the desired tolerance
-        tol = 10**(-8)  # Converging tolerance
-        E = M
-        while True:
-            Eo = E
-            E = M + ecc * math.sin(Eo)
-            if abs(Eo - E) < tol:
-                break
-
-        # True anomaly
-        cosv = (math.cos(E) - ecc) / (1 - ecc * math.cos(E))
-        sinv = math.sqrt(1 - ecc**2) * math.sin(E) / (1 - ecc * math.cos(E))
-        v = math.atan2(sinv, cosv)
-
-        # Cartesian coordinates within the orbital plane
-        u = v + w
-        r = a * (1 - ecc * math.cos(E))
-        # corrected right ascension (7.2921151467e-5 = rate of Earth rotation [rad/s])
-        O = Oo - 7.2921151467e-5 * t + dO * t
-        xp = r * math.cos(u)
-        yp = r * math.sin(u)
-
-        # ECEF coordinates [m]
-        x = xp * math.cos(O) - yp * math.cos(io) * math.sin(O)
-        y = xp * math.sin(O) + yp * math.cos(io) * math.cos(O)
-        z = yp * math.sin(io)
-
-        xmap.append(x)
-        ymap.append(y)
-        zmap.append(z)
-        R.append(math.sqrt(x**2+y**2+z**2))
+        xmap.append(ecef[0])
+        ymap.append(ecef[1])
+        zmap.append(ecef[2])
         
-
         # increase time
         t = t + incTime
-        j = j+1
+    
+    #Getting all LLA coordinates
     for i in range(len(xmap)):
         lla=ECEF2LLA(xmap[i],ymap[i],zmap[i])
         latmap.append(lla[0])
@@ -1034,7 +989,7 @@ def computeCoordinates(esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime):
     return coordinates
 
 
-# define function to calculate cross product
+# Function that calculate cross product
 def cross(a, b):
     result = [a[1]*b[2] - a[2]*b[1],
               a[2]*b[0] - a[0]*b[2],
@@ -1043,8 +998,6 @@ def cross(a, b):
     return result
 
 # Normalize Vector
-
-
 def norm(a):
     module = math.sqrt(a[0]**2+a[1]**2+a[2]**2)
     V = []
@@ -1054,8 +1007,6 @@ def norm(a):
     return V
 
 # Product of vectors by value
-
-
 def prod(a, val):
     products = []
     for num1 in a:
@@ -1063,8 +1014,6 @@ def prod(a, val):
     return products
 
 # Division of vector by value
-
-
 def div(a, val):
     products = []
     for num1 in a:
@@ -1072,8 +1021,6 @@ def div(a, val):
     return products
 
 # Sum of vectors
-
-
 def sum(a, b):
     result = []
     for num1, num2 in zip(a, b):
@@ -1081,8 +1028,6 @@ def sum(a, b):
     return result
 
 # Substraction of vectors
-
-
 def sub(a, b):
     result = []
     for num1, num2 in zip(a, b):
@@ -1090,22 +1035,18 @@ def sub(a, b):
     return result
 
 # Modulo of a vector
-
-
 def modulo(a):
     result = math.sqrt(a[0]**2+a[1]**2+a[2]**2)
     return result
 
-# Dot product
-
-
+# Dot product of two vectors
 def dot(a, b):
     result = 0.0
     for n in range(len(a)):
         result = result+a[n]*b[n]
     return result
 
-
+#Function that computes the visibility area of the user
 def visibilidadObs(a, latObs, longObs, altObs, name):
     # Visibilidad observador
     pi = math.pi
@@ -1186,6 +1127,22 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
         Xvis = long4+long2
     visCoord = [Xvis, Yvis]
     return visCoord
+
+def time2toa(epoch):
+    #Getting date and time from epoch
+    epochT = str(epoch).split("T")
+    epochT[1] = epochT[1].split(".")
+    hour = epochT[1][0]
+    date = epochT[0]
+
+    # Computing time to ToA
+    x = time.strptime(date+" " + hour, "%Y-%m-%d %H:%M:%S")
+    s = x.tm_yday
+    s = s+x.tm_hour/24+x.tm_min/(24*60)+x.tm_sec/(24*60*60)
+    ToA = s
+
+    return ToA
+
 
 
 def jsonCheck(datosObtenidos):

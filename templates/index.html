@@ -145,6 +145,8 @@
       };
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
+        text= "error"
+        document.getElementById("demo").value=text;
       }
       function getLocation() {
         if (navigator.geolocation) {
