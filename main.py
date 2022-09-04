@@ -481,6 +481,7 @@ def doppler(catnr):
     fin = timeP[-1]
     duration = (fin-init)/7
 
+    #Creating the texts for the ticks of Doppler graph
     # It convert the strings to datetime obj
     actual_time_obj = datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')
     times = []
@@ -549,6 +550,8 @@ def doppler(catnr):
     ax.set_yticks([0, 20, 40, 60, 80])
     ax.set_facecolor((0, 0, 1))
     ax.set_axisbelow(True)
+
+    #Legend of plot
     pop_a = mpatches.Patch(color='yellow', label='First Stretch')
     pop_b = mpatches.Patch(color='red', label='Second Stretch')
     pop_c = mpatches.Patch(color='black', label='First point of Visibility')
@@ -561,6 +564,7 @@ def doppler(catnr):
         fig.tight_layout()
         fig.subplots_adjust(bottom=0.12)
 
+    #Saving plot and generating url
     plt.savefig(img, format='png', bbox_inches="tight")
     plt.close()
     img.seek(0)
@@ -579,7 +583,7 @@ def doppler(catnr):
     ax.set_xticks(xticks, c='white')
     ax.set_xticklabels(times, c='white', rotation=90)
 
-    # setting ticks for y-axis
+    # Setting ticks for y-axis
     yticks = ax.get_yticks()
     yticklabel = []
     for i in range(len(yticks)):
@@ -591,14 +595,98 @@ def doppler(catnr):
     ax.set_facecolor((0, 0, 1))
     ax.set_axisbelow(True)
 
+    #Saving plot and generating url
     plt.savefig(img2, format='png', bbox_inches="tight")
     plt.close()
     img2.seek(0)
     plotDoppler_url = base64.b64encode(img2.getvalue()).decode('utf8')
 
-    text = [("The frequency for this satellite is: "+str(freq/10**6)+" MHz"), ("Max Doppler frequency: "+str(round(max(dopplerVis)/1000, 2))+" kHz"),
-            ("Min Doppler frequency: "+str(round(min(dopplerVis)/1000, 2))+" kHz"), ("Max radial speed: " + str(round(max(vinstReal), 2)) + " m/s"), (visText)]
-    return render_template('doppler.html', entries=text, doppler=fDReal, plot_url=plot_url, plotDoppler_url=plotDoppler_url)
+    init = 0
+    fin = (len(vinstReal)-1)*incTime
+    duration = (fin-init)/7
+    timeT = list(range(init, fin+1,incTime))
+
+    #Creating the texts for the ticks of Doppler graph
+    # It convert the strings to datetime obj
+    times2 = []
+    for i in range(8):
+        t = init+duration*(i)
+        time_obj = actual_time_obj + timedelta(seconds=t)
+        timeText = str(time_obj).split()
+        timev = timeText[1].split('.')
+        times2.append(timev[0])
+
+    # New Graph Distance to Satellite
+    # New plot3
+    img3 = BytesIO()
+
+    fig, ax = plt.subplots(facecolor='#383A3F')
+    ax.grid(c='white')
+    k = ax.scatter(timeT, dSatObs, c='magenta', s=40, alpha=1)
+    ax.set_title("Distance to satellite "+name +
+                 " with ID "+str(catnr), va='bottom', c='white')
+    ax.set_xlabel('Time (UTC)', c='white')  # Add an x-label to the axes.
+    xticks = numpy.arange(init, fin+1, step=duration)
+    ax.set_xticks(xticks, c='white')
+    ax.set_xticklabels(times2, c='white', rotation=90)
+
+    # Setting ticks for y-axis
+    yticks = ax.get_yticks()
+    yticklabel = []
+    for i in range(len(yticks)):
+        yticklabel.append(yticks[i]/1000)
+
+    # Add a y-label to the axes
+    ax.set_ylabel('Distance (km)', c='white')
+    ax.set_yticklabels(yticklabel, color='white')
+    ax.set_facecolor((0, 0, 1))
+    ax.set_axisbelow(True)
+
+    #Saving plot and generating url
+    plt.savefig(img3, format='png', bbox_inches="tight")
+    plt.close()
+    img3.seek(0)
+    plotDistance_url = base64.b64encode(img3.getvalue()).decode('utf8')
+
+
+
+
+    # New Radial speed to Satellite
+    # New plot4
+    img4 = BytesIO()
+
+    fig, ax = plt.subplots(facecolor='#383A3F')
+    ax.grid(c='white')
+    k = ax.scatter(timeT, vinstReal, c='aqua', s=40, alpha=1)
+    ax.set_title("Radial speed of Satellite "+name +
+                 " with ID "+str(catnr), va='bottom', c='white')
+    ax.set_xlabel('Time (UTC)', c='white')  # Add an x-label to the axes.
+    xticks = numpy.arange(init, fin+1, step=duration)
+    ax.set_xticks(xticks, c='white')
+    ax.set_xticklabels(times2, c='white', rotation=90)
+
+    # Setting ticks for y-axis
+    yticks = ax.get_yticks()
+    yticklabel = []
+    for i in range(len(yticks)):
+        yticklabel.append(yticks[i])
+
+    # Add a y-label to the axes
+    ax.set_ylabel('Radial speed (m/s)', c='white')
+    ax.set_yticklabels(yticklabel, color='white')
+    ax.set_facecolor((0, 0, 1))
+    ax.set_axisbelow(True)
+
+    #Saving plot and generating url
+    plt.savefig(img4, format='png', bbox_inches="tight")
+    plt.close()
+    img4.seek(0)
+    plotRadialSpeed_url = base64.b64encode(img4.getvalue()).decode('utf8')
+
+    text1 = [("The frequency for this satellite is: "+str(freq/10**6)+" MHz"), ("Max Doppler frequency: "+str(round(max(dopplerVis)/1000, 2))+" kHz"),
+            ("Min Doppler frequency: "+str(round(min(dopplerVis)/1000, 2))+" kHz"),(visText)]
+    text2 = [("Max radial speed: " + str(round(max(vinstReal), 2)) + " m/s"),("Min distance to satellite: " + str(round(min(dSatObs)/1000, 2)) + " km")]
+    return render_template('doppler.html', entries1=text1, entries2=text2,doppler=fDReal, plot_url=plot_url, plotDoppler_url=plotDoppler_url, plotDistance_url=plotDistance_url,plotRadialSpeed_url=plotRadialSpeed_url,satname=name)
 
 
 def dbUpdate():

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doppler</title>
+    <title>Analysis</title>
     <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/2016/04/Satellite-Download-PNG.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -35,11 +35,16 @@
       </style>
 </head>
 <body>
-    <h1>Doppler</h1>
-    {% for entry in entries %}
+    <h1>{{ satname }}</h1>
+    {% for entry in entries1 %}
        <p>{{ entry }}</p>
     {% endfor %}
     <img src="data:image/png;base64, {{ plot_url }}">
     <img src="data:image/png;base64, {{ plotDoppler_url }}">
+    {% for entry in entries2 %}
+       <p>{{ entry }}</p>
+    {% endfor %}
+    <img src="data:image/png;base64, {{ plotDistance_url }}">
+    <img src="data:image/png;base64, {{ plotRadialSpeed_url }}">
 </body>
 </html>
