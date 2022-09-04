@@ -7,7 +7,7 @@ Project built for my Final Degree Project at the Universitat Politecnica de Cata
 
 ## User Guide
 
-![alt text](https://github.com/mxapelli/SatelliteTracker/tree/main/images/index.PNG?raw=true)
+![alt text](./images/index.PNG)
 
 Select a specific satellite or an entire constellation of satellites. You can also allow the use of your real geolocation.
 
