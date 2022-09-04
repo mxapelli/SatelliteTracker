@@ -13,17 +13,17 @@ Select a specific satellite or an entire constellation of satellites. You can al
 
 After selecting what you want to see, a new tab will be opened with the trajectory of the satellite or satellites and the visibility area of the user.
 
-![alt text](./images/sat1.PNG?raw=true)
+![alt text](./images/constellation.PNG?raw=true)
 
 In the constellation view if you select a satellite a new tab will be opened with the specific information of the satellite.
 
-![alt text](./images/constellation.PNG?raw=true)
+![alt text](./images/constellation2.PNG?raw=true)
 
 In the Satellite View if the satellite is visible, you can see more data by clicking on the button.
-![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/map.PNG?raw=true)
+![alt text](./images/sat1.PNG?raw=true)
 
 The Analysis View show more data about the visibility of the satellite and other parameters.
-![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/map.PNG?raw=true)
+![alt text](./images/satdata.PNG?raw=true)
 
 You can also search for a determined satellite name or catalog number.
-![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/viewOld.PNG?raw=true)
+![alt text](./images/search.PNG?raw=true)
