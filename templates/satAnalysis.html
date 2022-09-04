@@ -31,6 +31,26 @@
           margin-block-start: 0.3em;
           margin-block-end: 0.3em;
         }
+
+      .flex-container {
+          display: flex;
+        }
+
+      .flex-child {
+        flex: 1;
+        border: 5px solid yellow
+      }  
+
+      .flex-child:first-child {
+        margin-right: 20px;
+        
+      }
+
+      img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
   
       </style>
 </head>
@@ -39,12 +59,30 @@
     {% for entry in entries1 %}
        <p>{{ entry }}</p>
     {% endfor %}
-    <img src="data:image/png;base64, {{ plot_url }}">
-    <img src="data:image/png;base64, {{ plotDoppler_url }}">
+    <div class="flex-container">
+      
+      <div class="flex-child magenta">
+        <img src="data:image/png;base64, {{ plot_url }}">
+      </div>
+      
+      <div class="flex-child green">
+        <img src="data:image/png;base64, {{ plotDoppler_url }}">
+      </div>
+      
+    </div>
     {% for entry in entries2 %}
        <p>{{ entry }}</p>
     {% endfor %}
-    <img src="data:image/png;base64, {{ plotDistance_url }}">
-    <img src="data:image/png;base64, {{ plotRadialSpeed_url }}">
+    <div class="flex-container">
+      
+      <div class="flex-child magenta">
+        <img src="data:image/png;base64, {{ plotDistance_url }}">
+      </div>
+      
+      <div class="flex-child green">
+        <img src="data:image/png;base64, {{ plotRadialSpeed_url }}">
+      </div>
+      
+    </div>  
 </body>
 </html>

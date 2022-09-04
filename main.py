@@ -290,7 +290,7 @@ def constellation(constellation_name):
         return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis,constName=constName,vis=json.dumps(vis),satID=satID)
 
 
-@app.route('/<int:catnr>/doppler')
+@app.route('/<int:catnr>/satdata')
 def doppler(catnr):
     pi = math.pi
     Ge = 6.67384*10**(-11)  # Gravitational constant
@@ -686,7 +686,7 @@ def doppler(catnr):
     text1 = [("The frequency for this satellite is: "+str(freq/10**6)+" MHz"), ("Max Doppler frequency: "+str(round(max(dopplerVis)/1000, 2))+" kHz"),
             ("Min Doppler frequency: "+str(round(min(dopplerVis)/1000, 2))+" kHz"),(visText)]
     text2 = [("Max radial speed: " + str(round(max(vinstReal), 2)) + " m/s"),("Min distance to satellite: " + str(round(min(dSatObs)/1000, 2)) + " km")]
-    return render_template('doppler.html', entries1=text1, entries2=text2,doppler=fDReal, plot_url=plot_url, plotDoppler_url=plotDoppler_url, plotDistance_url=plotDistance_url,plotRadialSpeed_url=plotRadialSpeed_url,satname=name)
+    return render_template('satAnalysis.html', entries1=text1, entries2=text2,doppler=fDReal, plot_url=plot_url, plotDoppler_url=plotDoppler_url, plotDistance_url=plotDistance_url,plotRadialSpeed_url=plotRadialSpeed_url,satname=name)
 
 
 def dbUpdate():
