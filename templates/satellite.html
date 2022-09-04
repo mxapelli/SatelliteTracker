@@ -8,6 +8,8 @@
     <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />>
     <style>
     body {
         background-color:#383A3F;
@@ -143,7 +145,7 @@
         satID="{{number}}"
         console.log(visSat)
 
-        map = L.map('map',{maxBounds: bounds, maxBoundsViscosity: 1.0}).setView([20, 1.8382], 2);
+        map = L.map('map',{maxBounds: bounds, maxBoundsViscosity: 1.0, fullscreenControl: true}).setView([20, 1.8382], 2);
         /*Legend specific*/
         var legend = L.control({ position: "topleft" });
                 
