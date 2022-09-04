@@ -267,20 +267,20 @@
             for (let i = 0; i < markers.length; i++) {
                 map.removeLayer(markers[i])
                 if (vis[i][k]==1 && k>=1 && vis[i][k-1]==0  && constName!="STARLINK"){
-                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='http://127.0.0.1:5000/"+satID[i]+"' target='_blank'>"+satName[i]+" IN"+"</a>");
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='./"+satID[i]+"' target='_blank'>"+satName[i]+" IN"+"</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
                     
                 }
                 else if(k==0 && vis[i][k]==1 && constName!="STARLINK"){
-                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='http://127.0.0.1:5000/"+satID[i]+"' target='_blank'>"+satName[i]+"</a>");
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='./"+satID[i]+"' target='_blank'>"+satName[i]+"</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
                 }
                 else if(vis[i][k]==0 && k>=1 && vis[i][k-1]==1&& constName!="STARLINK"){
-                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='http://127.0.0.1:5000/"+satID[i]+"' target='_blank'>"+satName[i]+" OUT"+"</a>");
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='./"+satID[i]+"' target='_blank'>"+satName[i]+" OUT"+"</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map).openPopup();
                 }
                 else{
-                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='http://127.0.0.1:5000/"+satID[i]+"' target='_blank'>"+satName[i]+"</a>");
+                    var new_popup = L.popup({"autoClose": false, "closeOnClick": null}).setContent("<a href='./"+satID[i]+"' target='_blank'>"+satName[i]+"</a>");
                     var marker=L.marker(satPos[i][k],{icon: satIcon}).bindPopup(new_popup).addTo(map);
                 }
                 markers.splice(i,1,marker)

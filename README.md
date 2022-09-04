@@ -11,16 +11,19 @@ Project built for my Final Degree Project at the Universitat Politecnica de Cata
 
 Select a specific satellite or an entire constellation of satellites. You can also allow the use of your real geolocation.
 
-After Loading, open a Table to see the information of the respective category.
+After selecting what you want to see, a new tab will be opened with the trajectory of the satellite or satellites and the visibility area of the user.
 
 ![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/cat21.PNG?raw=true)
 
-You can click on the cell that say "Click to expand", to see all the information of a certain Data Item. You can search also for packets using the Track Number in CAT10 and Target Identification in CAT21.
+In the constellation view if you select a satellite a new tab will be opened with the specific information of the satellite.
 
 ![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/search.PNG?raw=true)
 
-In the Map View you can simulate the flights and there are checks to filter by type of emission and buttons to accelerate or decelerate the time. 
+In the Satellite View if the satellite is visible, you can see more data by clicking on the button.
 ![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/map.PNG?raw=true)
 
-You can also search for a determined Target Identification or Track Number, and look at all the position of a determined flight.
+The Analysis View show more data about the visibility of the satellite and other parameters.
+![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/map.PNG?raw=true)
+
+You can also search for a determined satellite name or catalog number.
 ![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/viewOld.PNG?raw=true)
