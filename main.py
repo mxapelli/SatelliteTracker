@@ -683,10 +683,12 @@ def doppler(catnr):
     img4.seek(0)
     plotRadialSpeed_url = base64.b64encode(img4.getvalue()).decode('utf8')
 
-    text1 = [("The frequency for this satellite is: "+str(freq/10**6)+" MHz"), ("Max Doppler frequency: "+str(round(max(dopplerVis)/1000, 2))+" kHz"),
-            ("Min Doppler frequency: "+str(round(min(dopplerVis)/1000, 2))+" kHz"),(visText)]
-    text2 = [("Max radial speed: " + str(round(max(vinstReal), 2)) + " m/s"),("Min distance to satellite: " + str(round(min(dSatObs)/1000, 2)) + " km")]
-    return render_template('satAnalysis.html', entries1=text1, entries2=text2,doppler=fDReal, plot_url=plot_url, plotDoppler_url=plotDoppler_url, plotDistance_url=plotDistance_url,plotRadialSpeed_url=plotRadialSpeed_url,satname=name)
+    text1 = [("The frequency for this satellite is: "+str(freq/10**6)+" MHz"), (visText)]
+    text2 =[("Maximum Doppler frequency: "+str(round(max(dopplerVis)/1000, 2))+" kHz"),
+            ("Minimum Doppler frequency: "+str(round(min(dopplerVis)/1000, 2))+" kHz"),]
+    text3 = [("Maximum radial speed: " + str(round(max(vinstReal), 2)) + " m/s"),("Minimum radial speed: " + str(round(min(vinstReal), 2)) + " m/s")]
+    text4 = [("Maximum distance to satellite: " + str(round(max(dSatObs)/1000, 2)) + " km"),("Minimum distance to satellite: " + str(round(min(dSatObs)/1000, 2)) + " km")]
+    return render_template('satAnalysis.html', entries1=text1, entries2=text2,speed=text3,distance=text4,doppler=fDReal, plot_url=plot_url, plotDoppler_url=plotDoppler_url, plotDistance_url=plotDistance_url,plotRadialSpeed_url=plotRadialSpeed_url,satname=name)
 
 
 def dbUpdate():

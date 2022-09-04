@@ -20,6 +20,8 @@
           font-size:12pt;
           font-family:arial,helvetica;
           padding-left : 20px;
+          text-align:center;
+          margin-top: 10px;
         }
   
       h1 {
@@ -34,16 +36,17 @@
 
       .flex-container {
           display: flex;
+          margin-bottom: 40px;
         }
 
       .flex-child {
         flex: 1;
-        border: 5px solid yellow
+        margin-bottom: 20px;
+        border: 10px solid blue
       }  
 
       .flex-child:first-child {
         margin-right: 20px;
-        
       }
 
       img {
@@ -56,30 +59,37 @@
 </head>
 <body>
     <h1>{{ satname }}</h1>
-    {% for entry in entries1 %}
-       <p>{{ entry }}</p>
-    {% endfor %}
     <div class="flex-container">
       
       <div class="flex-child magenta">
+        {% for entry in entries1 %}
+           <p>{{ entry }}</p>
+       {% endfor %}
         <img src="data:image/png;base64, {{ plot_url }}">
       </div>
       
       <div class="flex-child green">
+        {% for entry in entries2 %}
+           <p>{{ entry }}</p>
+       {% endfor %}
         <img src="data:image/png;base64, {{ plotDoppler_url }}">
       </div>
       
     </div>
-    {% for entry in entries2 %}
-       <p>{{ entry }}</p>
-    {% endfor %}
+ 
     <div class="flex-container">
       
       <div class="flex-child magenta">
+        {% for entry in distance %}
+           <p>{{ entry }}</p>
+        {% endfor %}
         <img src="data:image/png;base64, {{ plotDistance_url }}">
       </div>
       
       <div class="flex-child green">
+        {% for entry in speed %}
+           <p>{{ entry }}</p>
+        {% endfor %}
         <img src="data:image/png;base64, {{ plotRadialSpeed_url }}">
       </div>
       
