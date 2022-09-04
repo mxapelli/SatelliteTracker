@@ -20,10 +20,13 @@ In the constellation view if you select a satellite a new tab will be opened wit
 ![alt text](./images/constellation2.PNG?raw=true)
 
 In the Satellite View if the satellite is visible, you can see more data by clicking on the button.
+
 ![alt text](./images/sat1.PNG?raw=true)
 
 The Analysis View show more data about the visibility of the satellite and other parameters.
+
 ![alt text](./images/satData.PNG?raw=true)
 
 You can also search for a determined satellite name or catalog number.
+
 ![alt text](./images/search.PNG?raw=true)
