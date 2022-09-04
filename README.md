@@ -9,7 +9,7 @@ Project built for my Final Degree Project at the Universitat Politecnica de Cata
 
 ![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/loadFile.PNG?raw=true)
 
-When opening, upload a file --> Load File to select the .ast file.
+Select an specific satellite or an entire constellation of satellites. You can also allow the use of your real geolocation.
 
 After Loading, open a Table to see the information of the respective category.
 
