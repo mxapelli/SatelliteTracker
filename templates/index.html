@@ -108,6 +108,7 @@
       }
       .flex-container {
           display: flex;
+          margin-top: 30px;
         }
 
       .flex-child {
@@ -150,11 +151,13 @@
     <div class="flex-container">
       
       <div class="flex-child magenta">
-        <h4>You allow us to use your real Geolocation?</h4>
+       <h4 style="text-align:center">You allow us to use your real Geolocation?</h4>
+       <div class="container2">
         <form action = "/" method = "post">
           <p><input type = "hidden" name="nm" id="demo"/></p>
           <h5><input type = "submit" value = "Allow use of geolocation" class="btn"/></h5>
-        </form> 
+        </form>
+       </div> 
       </div>
       
       <div class="flex-child green">
