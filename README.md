@@ -7,17 +7,17 @@ Project built for my Final Degree Project at the Universitat Politecnica de Cata
 
 ## User Guide
 
-![alt text](./images/index.PNG)
+![alt text](./images/index.PNG?raw=true)
 
 Select a specific satellite or an entire constellation of satellites. You can also allow the use of your real geolocation.
 
 After selecting what you want to see, a new tab will be opened with the trajectory of the satellite or satellites and the visibility area of the user.
 
-![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/cat21.PNG?raw=true)
+![alt text](./images/sat1.PNG?raw=true)
 
 In the constellation view if you select a satellite a new tab will be opened with the specific information of the satellite.
 
-![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/search.PNG?raw=true)
+![alt text](./images/constellation.PNG?raw=true)
 
 In the Satellite View if the satellite is visible, you can see more data by clicking on the button.
 ![alt text](https://github.com/AsterixDecoder/AsterixDecoder/blob/main/AsterixDecoder/images/map.PNG?raw=true)
