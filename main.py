@@ -291,6 +291,8 @@ def constellation(constellation_name):
 
 @app.route('/<int:catnr>/satdata')
 def doppler(catnr):
+
+    #Getting LLA coordinates from user session
     if 'latUser' in session:
         latUser = session['latUser']
         longUser = session['longUser']
@@ -299,10 +301,13 @@ def doppler(catnr):
         latUser = 41.2757116961354
         longUser = 1.9872286269285848
         altUser = 4
-
+    
+    #Checking if satellite exists
     sat = mongo_db.satellites.find_one({"noradID": catnr})
-    if sat is None:
+
+    if sat is None: # Handling non-existing satellite
         return render_template('error.html')
+
     name = sat["name"]
     freq = sat["freq"]
     if freq == 1575.42*10**6:
@@ -338,13 +343,12 @@ def doppler(catnr):
     w = w * pi / 180  # argument of perigee [rad]
     Mo = M * pi / 180  # Mean anomaly at ToA [rad]
 
-    # Groundtrack for NT periods
+    # Groundtrack for period T in seconds
     coordinates = computeCoordinates(esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime)
     xmap = coordinates[0]
     ymap = coordinates[1]
     zmap = coordinates[2]
 
-    print("Frequency of satellite ", freq)
     r = (1-ecc)*a
     v = math.sqrt(Ge*Me*((2/r)-(1/a)))
     Lm = r*v
@@ -415,9 +419,6 @@ def doppler(catnr):
         fD.append(freq*vinst[n]/(3*10**8))
         fDReal.append((freq*vinstReal[n])/(3*10**8))
 
-    print("Max Freq. Doppler: ", max(fDReal))
-    print("Max Speed ", max(vinstReal))
-
     id = {"noradID": catnr}
     newvalues = {"$set": {"vDoppler": fDReal}}
     mongo_db.satellites.update_one(id, newvalues)
@@ -470,8 +471,7 @@ def doppler(catnr):
     duration = (fin-init)/7
 
     #Creating the texts for the ticks of Doppler graph
-    # It convert the strings to datetime obj
-    actual_time_obj = datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')
+    actual_time_obj = datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')# It convert the strings to datetime obj
     times = []
     days = []
     for i in range(8):
@@ -1092,13 +1092,15 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
         Xvis.append(x0 + a*math.cos(t))
         Yvis.append(y0 + b*math.sin(t))
 
-    if "GPS" in name:
+    if "GPS" in name: #Correction of visibility area for GPS satellite
         long2 = []
         long3 = []
         for latm in range(round(latvis[0]), round(latvis[-1])):
+
             longprov = []
-            for i in range(0, 720):
-                longV = i*pi/720
+                
+            for i in range(-180, 180):
+                longV = i*pi/180
                 longV = longV*180/pi
                 satECEF = LLA2ECEF(latm, longV, r)
                 userECEF = LLA2ECEF(latObs, longObs, altObs)
@@ -1108,26 +1110,34 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
                 alpha = math.asin((-NED[2])/d)*180/pi
                 if (alpha >= 10):
                     longprov.append(longV)
+
             if len(longprov) >= 1:
-                long2.append(longprov[-1])
-                if (long2[-1]>=179.5):
-                    break
+                        long2.append(longprov[0])
+                        long3.append(longprov[-1])
+                        if (long2[-1]>=179.5): # Don't continue if long already near 180
+                            break
 
         Xvis = []
         Yvis = []
+        #Creating Vector of latVis
         for n in range(round(latvis[0]), round(latvis[-1])):
             Yvis.append(n)
         Yvis = Yvis[::-1]
         for n in range(round(latvis[0]), round(latvis[-1])):
             Yvis.append(n)
-        for n in range(99,int(len(Yvis)/2)):
+
+        length=len(long2)
+        for n in range(length,int(len(Yvis)/2)):
             long2.append(long2[-1])
-        long3 = long2[::-1]
-        long4 = [ -x for x in long3]
-        Xvis = long4+long2
+        long2 = long2[::-1]
+        Xvis = long2+long3
+        #long3 = long2[::-1]
+        #long4 = [ -x for x in long3]
+        #Xvis = long4+long2
     visCoord = [Xvis, Yvis]
     return visCoord
 
+#Function that computes the time to ToA (Time of applicability)
 def time2toa(epoch):
     #Getting date and time from epoch
     epochT = str(epoch).split("T")
@@ -1143,8 +1153,7 @@ def time2toa(epoch):
 
     return ToA
 
-
-
+# Function that checks if the json object is correct
 def jsonCheck(datosObtenidos):
     try:
         return datosObtenidos.json()
