@@ -1051,7 +1051,6 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
     r = a-Rearth
 
     latvis = []
-    longvis = []
     for i in range(-720, 720):
         # Radio latitud
         latV = i*pi/1440
@@ -1065,117 +1064,81 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
         if (alpha >= 10):
             latvis.append(latV)
 
-        # Radio longitud
-        longV = i*pi/720
-        longV = longV*180/pi
-        satECEF = LLA2ECEF(latObs, longV, r)
-        userECEF = LLA2ECEF(latObs, longObs, altObs)
-        pointV = sub(satECEF, userECEF)
-        NED = ECEF2NED(pointV, latObs*pi/180, longObs*pi/180)
-        d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
-        alpha = math.asin((-NED[2])/d)*180/pi
+    longneg1=[]
+    longneg2=[]
+    longpos1=[]
+    longpos2=[]
+    latneg=[]
+    latpos=[]
+    for latm in range(round(latvis[0]), round(latvis[-1])):
 
-        if (alpha >= 10):
-            longvis.append(longV)
-    # Generació elipse visibilitat
-    a = abs(longvis[len(longvis)-1]-longvis[0])/2
-    b = abs(latvis[len(latvis)-1]-latvis[0])/2
-    x0 = longObs
-    y0 = latObs
-    Xvis = []
-    Yvis = []
-    for n in range(-100, 101):
-        t = n*0.01*pi
-        Xvis.append(x0 + a*math.cos(t))
-        Yvis.append(y0 + b*math.sin(t))
-
-    if "GPS" or "IRIDIUM" in name: #Correction of visibility area for GPS satellite
-        long2 = []
-        long3 = []
-        longneg1=[]
-        longneg2=[]
-        longpos1=[]
-        longpos2=[]
-        latneg=[]
-        latpos=[]
-        for latm in range(round(latvis[0]), round(latvis[-1])):
-
-            longprov = []
-            longneg=[]
-            longpos=[]
+        longneg=[]
+        longpos=[]
                 
-            for i in range(-360, 360):
-                longV = i*pi/360
-                longV = longV*180/pi
-                satECEF = LLA2ECEF(latm, longV, r)
-                userECEF = LLA2ECEF(latObs, longObs, altObs)
-                pointV = sub(satECEF, userECEF)
-                NED = ECEF2NED(pointV, latObs*pi/180, longObs*pi/180)
-                d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
-                alpha = math.asin((-NED[2])/d)*180/pi
-                if (alpha >= 10):
-                    if (longV<0):
-                        longneg.append(longV)
-                    elif (longV>0):
-                        longpos.append(longV)
-                    else:
-                        longneg.append(longV)
-                        longpos.append(longV)
-                    longprov.append(longV)
+        for i in range(-360, 360):
+            longV = i*pi/360
+            longV = longV*180/pi
+            satECEF = LLA2ECEF(latm, longV, r)
+            userECEF = LLA2ECEF(latObs, longObs, altObs)
+            pointV = sub(satECEF, userECEF)
+            NED = ECEF2NED(pointV, latObs*pi/180, longObs*pi/180)
+            d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
+            alpha = math.asin((-NED[2])/d)*180/pi
+            if (alpha >= 10):
+                if (longV<0):
+                    longneg.append(longV)
+                elif (longV>0):
+                    longpos.append(longV)
+                else:
+                    longneg.append(longV)
+                    longpos.append(longV)
 
-            if len(longprov) >= 1:
 
-                if len(longneg)>0:
-                    latneg.append(latm)
-                    longneg1.append(longneg[0])
-                    longneg2.append(longneg[-1])
-                if len(longpos)>0:
-                    latpos.append(latm)
-                    longpos1.append(longpos[0])
-                    longpos2.append(longpos[-1])
+        if len(longneg)>0:
+            latneg.append(latm)
+            longneg1.append(longneg[0])
+            longneg2.append(longneg[-1])
+        if len(longpos)>0:
+            latpos.append(latm)
+            longpos1.append(longpos[0])
+            longpos2.append(longpos[-1])
 
-                long3.append(longprov[-1])
-                long2.append(longprov[0])
-                #if (long2[-1]>=179.5): # Don't continue if long already near 180
-                    #break
-
-        Xvis = []
-        Yvis = []
-        negArea=[]
-        posArea=[]
-        #Creating area surfaces
-        for i in range(len(latneg)):
+    negArea=[]
+    posArea=[]
+    #Creating area surfaces
+    for i in range(len(latneg)):
             latlng=[]
             latlng.append(latneg[i])
             latlng.append(longneg1[i])
             negArea.append(latlng)
 
-        latneg = latneg[::-1] #Inverting vector
-        longneg2 =longneg2[::-1]
-        for i in range(len(latneg)):
+    latneg = latneg[::-1] #Inverting vector
+    longneg2 =longneg2[::-1]
+    for i in range(len(latneg)):
             latlng=[]
             latlng.append(latneg[i])
             latlng.append(longneg2[i])
             negArea.append(latlng)
 
-        for i in range(len(latpos)):
+    for i in range(len(latpos)):
             latlng=[]
             latlng.append(latpos[i])
             latlng.append(longpos1[i])
             posArea.append(latlng)
 
-        latpos = latpos[::-1] #Inverting vector
-        longpos2 =longpos2[::-1]
-        for i in range(len(latpos)):
+    latpos = latpos[::-1] #Inverting vector
+    longpos2 =longpos2[::-1]
+    for i in range(len(latpos)):
             latlng=[]
             latlng.append(latpos[i])
             latlng.append(longpos2[i])
             posArea.append(latlng)
 
-        area=[]
-        area.append(posArea)
-        area.append(negArea)
+    area=[]
+    area.append(posArea)
+    area.append(negArea)
 
+    print (area)
     return area
 
 #Function that computes the time to ToA (Time of applicability)
