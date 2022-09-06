@@ -1138,7 +1138,6 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
     area.append(posArea)
     area.append(negArea)
 
-    print (area)
     return area
 
 #Function that computes the time to ToA (Time of applicability)
