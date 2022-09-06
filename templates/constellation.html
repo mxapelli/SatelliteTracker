@@ -157,6 +157,9 @@
         const vis= JSON.parse({{vis|tojson}});
         console.log(vis)
 
+        const visPos= JSON.parse({{visPos|tojson}});
+        console.log(visPos)
+
         Xvis=[{% for item in xvis %}
             "{{ item }}",
             {% endfor %}]
@@ -164,9 +167,9 @@
         Yvis=[{% for item in yvis %}
             "{{ item }}",
             {% endfor %}]
-            visPos=[];
+            visPos2=[];
             for(var j=0; j<Xvis.length; j++) {
-                visPos.push([Yvis[j],Xvis[j]]);
+                visPos2.push([Yvis[j],Xvis[j]]);
             }
 
 
@@ -217,6 +220,7 @@
         var latUser = parseFloat(userLLA[0][0]).toFixed(2);
         var longUser = parseFloat(userLLA[0][1]).toFixed(2);
         var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
+        var polygon = L.polygon(visPos2,{weight: 0, color: 'red'}).addTo(map);
         var polygon = L.polygon(visPos).addTo(map);
         c=0
         colors=['red','blue','green','yellow','orange','purple','sienna','lime','indigo','silver','fuchsia','cyan','navy']

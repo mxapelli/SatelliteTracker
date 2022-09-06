@@ -181,8 +181,8 @@ def constellation(constellation_name):
         longUser = session['longUser']
         altUser = session['altUser']
     else:
-        latUser = 41.2757116961354
-        longUser = 1.9872286269285848
+        latUser = -70
+        longUser = 170#1.9872286269285848
         altUser = 4
 
     const="^"+constName
@@ -279,14 +279,16 @@ def constellation(constellation_name):
         
 
         # Visibility Area of User
-        visCoord = visibilidadObs(amax, latUser, longUser, altUser, name)
+        visC = visibilidadObs(amax, latUser, longUser, altUser, name)
+        visPos=visC[0]
+        visCoord=visC[1]
         Xvis = visCoord[0]
         Yvis = visCoord[1]
         print("Time to process",constName,time.time()-start_time)
         atime = time.localtime()
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
         text = [("You have selected the "+constName+" constellation")]
-        return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis,constName=constName,vis=json.dumps(vis),satID=satID)
+        return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser,constName=constName,vis=json.dumps(vis),satID=satID,visPos=json.dumps(visPos),xvis=Xvis, yvis=Yvis)#
 
 
 @app.route('/<int:catnr>/satdata')
@@ -1092,15 +1094,23 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
         Xvis.append(x0 + a*math.cos(t))
         Yvis.append(y0 + b*math.sin(t))
 
-    if "GPS" in name: #Correction of visibility area for GPS satellite
+    if "GPS" or "IRIDIUM" in name: #Correction of visibility area for GPS satellite
         long2 = []
         long3 = []
+        longneg1=[]
+        longneg2=[]
+        longpos1=[]
+        longpos2=[]
+        latneg=[]
+        latpos=[]
         for latm in range(round(latvis[0]), round(latvis[-1])):
 
             longprov = []
+            longneg=[]
+            longpos=[]
                 
-            for i in range(-180, 180):
-                longV = i*pi/180
+            for i in range(-360, 360):
+                longV = i*pi/360
                 longV = longV*180/pi
                 satECEF = LLA2ECEF(latm, longV, r)
                 userECEF = LLA2ECEF(latObs, longObs, altObs)
@@ -1109,16 +1119,79 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
                 d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
                 alpha = math.asin((-NED[2])/d)*180/pi
                 if (alpha >= 10):
+                    if (longV<0):
+                        longneg.append(longV)
+                    elif (longV>0):
+                        longpos.append(longV)
+                    else:
+                        longneg.append(longV)
+                        longpos.append(longV)
                     longprov.append(longV)
 
             if len(longprov) >= 1:
-                        long2.append(longprov[0])
-                        long3.append(longprov[-1])
-                        if (long2[-1]>=179.5): # Don't continue if long already near 180
-                            break
+
+                if len(longneg)>0:
+                    latneg.append(latm)
+                    longneg1.append(longneg[0])
+                    longneg2.append(longneg[-1])
+                if len(longpos)>0:
+                    latpos.append(latm)
+                    longpos1.append(longpos[0])
+                    longpos2.append(longpos[-1])
+
+                long3.append(longprov[-1])
+                long2.append(longprov[0])
+                #if (long2[-1]>=179.5): # Don't continue if long already near 180
+                    #break
 
         Xvis = []
         Yvis = []
+        print(latpos)
+        print("longOesteNeg",longneg1)
+        print("longEsteNeg",longneg2)
+        print("longOestePos",longpos1)
+        print("longEstePos",longpos2)
+        negArea=[]
+        posArea=[]
+        #Creating area surfaces
+        for i in range(len(latneg)):
+            latlng=[]
+            latlng.append(latneg[i])
+            latlng.append(longneg1[i])
+            negArea.append(latlng)
+
+        latneg = latneg[::-1] #Inverting vector
+        longneg2 =longneg2[::-1]
+        for i in range(len(latneg)):
+            latlng=[]
+            latlng.append(latneg[i])
+            latlng.append(longneg2[i])
+            negArea.append(latlng)
+
+        for i in range(len(latpos)):
+            latlng=[]
+            latlng.append(latpos[i])
+            latlng.append(longpos1[i])
+            posArea.append(latlng)
+
+        latpos = latpos[::-1] #Inverting vector
+        longpos2 =longpos2[::-1]
+        for i in range(len(latpos)):
+            latlng=[]
+            latlng.append(latpos[i])
+            latlng.append(longpos2[i])
+            posArea.append(latlng)
+        
+
+        #print(negArea)
+        #print(posArea)
+
+        area=[]
+        area.append(posArea)
+        area.append(negArea)
+
+
+
         #Creating Vector of latVis
         for n in range(round(latvis[0]), round(latvis[-1])):
             Yvis.append(n)
@@ -1127,15 +1200,15 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
             Yvis.append(n)
 
         length=len(long2)
-        for n in range(length,int(len(Yvis)/2)):
-            long2.append(long2[-1])
+        #for n in range(length,int(len(Yvis)/2)):
+            #long2.append(long2[-1])
         long2 = long2[::-1]
         Xvis = long2+long3
         #long3 = long2[::-1]
         #long4 = [ -x for x in long3]
         #Xvis = long4+long2
     visCoord = [Xvis, Yvis]
-    return visCoord
+    return [area,visCoord]
 
 #Function that computes the time to ToA (Time of applicability)
 def time2toa(epoch):
