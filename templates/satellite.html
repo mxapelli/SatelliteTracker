@@ -132,16 +132,15 @@
         satName="{{satName}}"
 
         satID="{{number}}"
-        console.log(visSat)
 
         map = L.map('map',{maxBounds: bounds, maxBoundsViscosity: 1.0, fullscreenControl: true}).setView([20, 1.8382], 2);
         /*Legend specific*/
-        var legend = L.control({ position: "topleft" });
+        var legend = L.control({ position: "topright" });
                 
         legend.onAdd = function(map) {
             var div = L.DomUtil.create("div", "legend");
             div.innerHTML += '<i style="background: red"></i><span>Satellite Trajectory</span><br>';
-            div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
+            div.innerHTML += '<i style="background: blue"></i><span>User Visibility Area</span><br>';
             div.innerHTML += '<i style="background: black"></i><span>Satellite Position at locale time</span><br>';
             return div;
         };
@@ -182,7 +181,7 @@
         var longSat= parseFloat(satPos[0][1]).toFixed(2);
         var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
         markers.push(L.marker(satPos[0],{icon: satIcon}).bindPopup("Sat position: Lat:"+latSat+" Long:"+longSat).addTo(map).openPopup());
-        var polygon = L.polygon(visPos,{weight: 0, color: 'blue'}).addTo(map);
+        var polygon = L.polygon(visPos,{weight: 0, fillColor: 'blue',fillOpacity: 0.4}).addTo(map);
         spl=[]
         for(let j=1; j<satPos.length; j++) {
             if  (((satPos[j][1]<0) && (satPos[j-1][1]>0) )||((satPos[j-1][1]<-140) && (satPos[j][1]>0))){

@@ -189,7 +189,7 @@
                 
         legend.onAdd = function(map) {
                     var div = L.DomUtil.create("div", "legend");
-                    div.innerHTML += '<i style="background: dodgerblue"></i><span>User Visibility Area</span><br>';
+                    div.innerHTML += '<i style="background: blue"></i><span>User Visibility Area</span><br>';
                     div.innerHTML += '<i style="background: black"></i><span>Satellite Position at locale time</span><br>';
                     return div;
         };
@@ -201,7 +201,7 @@
         var latUser = parseFloat(userLLA[0][0]).toFixed(2);
         var longUser = parseFloat(userLLA[0][1]).toFixed(2);
         var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
-        var polygon = L.polygon(visPos,{weight: 0, color: 'blue'}).addTo(map);
+        var polygon = L.polygon(visPos,{weight: 0, fillColor: 'blue',fillOpacity: 0.4}).addTo(map);
         c=0
         colors=['red','blue','green','yellow','orange','purple','sienna','lime','indigo','silver','fuchsia','cyan','navy']
         for (let i = 0; i < satPos.length; i++) {
@@ -247,7 +247,6 @@
 
         k=0
         function moveSat() {
-            console.log(satPos[0].length)
             for (let i = 0; i < markers.length; i++) {
                 map.removeLayer(markers[i])
                 if (vis[i][k]==1 && k>=1 && vis[i][k-1]==0  && constName!="STARLINK"){
