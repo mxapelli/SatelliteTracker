@@ -123,7 +123,6 @@
         }
 
         const visPos= JSON.parse({{visPos|tojson}});
-        console.log(visPos)
 
 
         visSat=[{% for item in visSat %}
@@ -183,7 +182,7 @@
         var longSat= parseFloat(satPos[0][1]).toFixed(2);
         var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
         markers.push(L.marker(satPos[0],{icon: satIcon}).bindPopup("Sat position: Lat:"+latSat+" Long:"+longSat).addTo(map).openPopup());
-        var polygon = L.polygon(visPos).addTo(map);
+        var polygon = L.polygon(visPos,{weight: 0, color: 'blue'}).addTo(map);
         spl=[]
         for(let j=1; j<satPos.length; j++) {
             if  (((satPos[j][1]<0) && (satPos[j-1][1]>0) )||((satPos[j-1][1]<-140) && (satPos[j][1]>0))){
@@ -256,7 +255,6 @@
         let element = document.getElementById("button");
         let text = document.getElementById('visText');
         vis="{{vis}}"
-        console.log(vis)
     
         if (vis==1) {
           element.removeAttribute("hidden");

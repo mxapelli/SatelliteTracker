@@ -138,13 +138,9 @@
                 "{{ item }}",
                 {% endfor %}]
 
-        
-
         const long= JSON.parse({{longs|tojson}});
-        console.log(long)
-
         const lat= JSON.parse({{lats|tojson}});
-        console.log(lat)
+    
         satPos=[]
         for (let i = 0; i < satName.length; i++) {
             pos=[]
@@ -155,10 +151,8 @@
         }
 
         const vis= JSON.parse({{vis|tojson}});
-        console.log(vis)
 
         const visPos= JSON.parse({{visPos|tojson}});
-        console.log(visPos)
 
         constName="{{constName}}"
 
@@ -207,8 +201,7 @@
         var latUser = parseFloat(userLLA[0][0]).toFixed(2);
         var longUser = parseFloat(userLLA[0][1]).toFixed(2);
         var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
-        var polygon = L.polygon(visPos2,{weight: 0, color: 'red'}).addTo(map);
-        var polygon = L.polygon(visPos).addTo(map);
+        var polygon = L.polygon(visPos,{weight: 0, color: 'blue'}).addTo(map);
         c=0
         colors=['red','blue','green','yellow','orange','purple','sienna','lime','indigo','silver','fuchsia','cyan','navy']
         for (let i = 0; i < satPos.length; i++) {
