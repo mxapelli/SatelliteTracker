@@ -152,9 +152,7 @@ def satellite(catnr):
         vis = 0
 
     # Visibility Area of User
-    visCoord = visibilidadObs(a, latUser, longUser, altUser, name)
-    Xvis = visCoord[0]
-    Yvis = visCoord[1]
+    visPos = visibilidadObs(a, latUser, longUser, altUser, name)
 
     print("Time to process",name,time.time()-start_time)
     atime = time.localtime()
@@ -165,7 +163,7 @@ def satellite(catnr):
     print("session info", dt_string)
     text = [("You have selected the "+name+" satellite with Catalog Number: " +
              str(catnr))]
-    return render_template('satellite.html', entries=text, longs=longmap, lats=latmap, number=str(catnr), userlat=latUser, userlong=longUser, xvis=Xvis, yvis=Yvis, vis=vis, visSat=visSat, satName=name)
+    return render_template('satellite.html', entries=text, longs=longmap, lats=latmap, number=str(catnr), userlat=latUser, userlong=longUser, vis=vis, visSat=visSat, satName=name,visPos=json.dumps(visPos))
 
 @app.route('/<constellation_name>')
 def constellation(constellation_name):
@@ -181,8 +179,8 @@ def constellation(constellation_name):
         longUser = session['longUser']
         altUser = session['altUser']
     else:
-        latUser = -70
-        longUser = 170#1.9872286269285848
+        latUser = 41.2757116961354
+        longUser = 1.9872286269285848
         altUser = 4
 
     const="^"+constName
@@ -279,16 +277,13 @@ def constellation(constellation_name):
         
 
         # Visibility Area of User
-        visC = visibilidadObs(amax, latUser, longUser, altUser, name)
-        visPos=visC[0]
-        visCoord=visC[1]
-        Xvis = visCoord[0]
-        Yvis = visCoord[1]
+        visPos = visibilidadObs(amax, latUser, longUser, altUser, name)
+   
         print("Time to process",constName,time.time()-start_time)
         atime = time.localtime()
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
         text = [("You have selected the "+constName+" constellation")]
-        return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser,constName=constName,vis=json.dumps(vis),satID=satID,visPos=json.dumps(visPos),xvis=Xvis, yvis=Yvis)#
+        return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser,constName=constName,vis=json.dumps(vis),satID=satID,visPos=json.dumps(visPos))
 
 
 @app.route('/<int:catnr>/satdata')
@@ -1146,11 +1141,6 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
 
         Xvis = []
         Yvis = []
-        print(latpos)
-        print("longOesteNeg",longneg1)
-        print("longEsteNeg",longneg2)
-        print("longOestePos",longpos1)
-        print("longEstePos",longpos2)
         negArea=[]
         posArea=[]
         #Creating area surfaces
@@ -1181,34 +1171,12 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
             latlng.append(latpos[i])
             latlng.append(longpos2[i])
             posArea.append(latlng)
-        
-
-        #print(negArea)
-        #print(posArea)
 
         area=[]
         area.append(posArea)
         area.append(negArea)
 
-
-
-        #Creating Vector of latVis
-        for n in range(round(latvis[0]), round(latvis[-1])):
-            Yvis.append(n)
-        Yvis = Yvis[::-1]
-        for n in range(round(latvis[0]), round(latvis[-1])):
-            Yvis.append(n)
-
-        length=len(long2)
-        #for n in range(length,int(len(Yvis)/2)):
-            #long2.append(long2[-1])
-        long2 = long2[::-1]
-        Xvis = long2+long3
-        #long3 = long2[::-1]
-        #long4 = [ -x for x in long3]
-        #Xvis = long4+long2
-    visCoord = [Xvis, Yvis]
-    return [area,visCoord]
+    return area
 
 #Function that computes the time to ToA (Time of applicability)
 def time2toa(epoch):

@@ -160,19 +160,6 @@
         const visPos= JSON.parse({{visPos|tojson}});
         console.log(visPos)
 
-        Xvis=[{% for item in xvis %}
-            "{{ item }}",
-            {% endfor %}]
-
-        Yvis=[{% for item in yvis %}
-            "{{ item }}",
-            {% endfor %}]
-            visPos2=[];
-            for(var j=0; j<Xvis.length; j++) {
-                visPos2.push([Yvis[j],Xvis[j]]);
-            }
-
-
         constName="{{constName}}"
 
         
