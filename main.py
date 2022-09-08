@@ -1161,9 +1161,15 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
     longpos2 =longpos2[::-1]
     for i in range(len(latpos)):
             latlng=[]
-            latlng.append(latpos[i])
-            latlng.append(longpos2[i])
-            posArea.append(latlng)
+            if (i==(len(latpos)-1)):
+                latlng.append(latpos[i])
+                latlng.append(longpos2[i-1])
+                posArea.append(latlng)
+            else:
+                latlng.append(latpos[i])
+                latlng.append(longpos2[i])
+                posArea.append(latlng)
+
 
     area=[]
 
