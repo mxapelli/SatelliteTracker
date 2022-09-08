@@ -282,7 +282,7 @@ def constellation(constellation_name):
         print("Time to process",constName,time.time()-start_time)
         atime = time.localtime()
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
-        text = [("You have selected the "+constName+" constellation")]
+        text = [("You have selected the "+constName+" constellation, which contains "+str(len(listSat))+ " satellites")]
         return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser,constName=constName,vis=json.dumps(vis),satID=satID,visPos=json.dumps(visPos))
 
 
@@ -1070,7 +1070,21 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
     longpos2=[]
     latneg=[]
     latpos=[]
-    for latm in range(round(latvis[0]), round(latvis[-1])):
+
+    if "GPS" in name:
+        a=round(latvis[0])
+        b=round(latvis[-1])
+        step=1.0
+    elif "STARLINK" in name:
+        a=round(latvis[0])
+        b=round(latvis[-1])
+        step=0.5
+    else:
+        a=round(latvis[0],2)
+        b=round(latvis[-1],2)
+        step=0.25
+
+    for latm in numpy.arange(a, b,step):
 
         longneg=[]
         longpos=[]
@@ -1094,14 +1108,31 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
                     longpos.append(longV)
 
 
+
         if len(longneg)>0:
             latneg.append(latm)
-            longneg1.append(longneg[0])
-            longneg2.append(longneg[-1])
+            if len(longpos)>0:
+                longneg1.append(longneg[0])
+                if abs(longpos[0])<abs(longneg[-1]):
+                    longneg2.append(longpos[0])
+                elif abs(longpos[0])>=abs(longneg[-1]):
+                    longneg2.append(longneg[-1])
+            else:
+                longneg1.append(longneg[0])
+                longneg2.append(longneg[-1])
+
         if len(longpos)>0:
             latpos.append(latm)
-            longpos1.append(longpos[0])
-            longpos2.append(longpos[-1])
+            if len(longneg)>0:
+                
+                longpos1.append(longpos[-1])
+                if abs(longpos[0])<abs(longneg[-1]):
+                    longpos2.append(longpos[0])
+                elif abs(longpos[0])>=abs(longneg[-1]):
+                    longpos2.append(longneg[-1])
+            else:
+                longpos1.append(longpos[-1])
+                longpos2.append(longpos[0]) 
 
     negArea=[]
     posArea=[]
@@ -1111,7 +1142,7 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
             latlng.append(latneg[i])
             latlng.append(longneg1[i])
             negArea.append(latlng)
-
+    
     latneg = latneg[::-1] #Inverting vector
     longneg2 =longneg2[::-1]
     for i in range(len(latneg)):
@@ -1135,6 +1166,7 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
             posArea.append(latlng)
 
     area=[]
+
     area.append(posArea)
     area.append(negArea)
 
