@@ -696,13 +696,6 @@ def dbUpdate():
     for sat in satsDB:
         catnr = sat['noradID']
         name = sat['name']
-        #sats = mongo_db.satellites.find({"noradID": catnr})
-        #satsf=[]
-        #for i in sats:
-            #satsf.append(i)
-        #if len(satsf)>1:
-            #mongo_db.satellites.delete_many({"noradID": catnr})
-            #print(len(satsf))
         found = 0
         while found == 0:
             for i in range(len(satsCelestrak)):
@@ -712,6 +705,8 @@ def dbUpdate():
                     if (catnr == noradID):
                         if "IRIDIUM" in name:  # Esto es momentaneo, luego se borrara
                             name = name.strip("[-]")
+                        if "STARLINK" in name:  # Esto es momentaneo, luego se borrara
+                            name = satsCelestrak[i][j]['OBJECT_NAME']
                         if sat['epoch'] != epoch:
                             incl = satsCelestrak[i][j]['INCLINATION']
                             omega = satsCelestrak[i][j]['RA_OF_ASC_NODE']
