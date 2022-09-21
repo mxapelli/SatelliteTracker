@@ -705,6 +705,8 @@ def dbUpdate():
                     if (catnr == noradID):
                         if "IRIDIUM" in name:  # Esto es momentaneo, luego se borrara
                             name = name.strip("[-]")
+                        if "STARLINK" in name:  # Esto es momentaneo, luego se borrara
+                            name = satsCelestrak[i][j]['OBJECT_NAME']
                         if sat['epoch'] != epoch:
                             incl = satsCelestrak[i][j]['INCLINATION']
                             omega = satsCelestrak[i][j]['RA_OF_ASC_NODE']
@@ -946,6 +948,39 @@ def ECEF2NED(ECEF, phi, lamda):
     NED = numpy.matmul(invM, ECEFt)
     return NED
 
+#Function that transforms ECEF coordinates to NED
+def NED2ECEF(NED, phi, lamda):
+
+    # 1) Rotation Matrix from NED to ECEF: ECEF = M*NED
+    M = numpy.array([[(-math.sin(phi)*math.cos(lamda)), (-math.sin(lamda)), (-math.cos(phi)*math.cos(lamda))], [(-math.sin(phi)
+                    * math.sin(lamda)), (math.cos(lamda)), (-math.cos(phi)*math.sin(lamda))], [(math.cos(phi)), 0, (-math.sin(phi))]], dtype='f')
+    # 2) Compute NED coordinates
+    NEDt = numpy.array([NED]).T
+
+    ECEFT = numpy.matmul(M, NEDt)
+    ECEF=[]
+    ECEF.append(ECEFT[0][0])
+    ECEF.append(ECEFT[1][0])
+    ECEF.append(ECEFT[2][0])
+    return ECEF
+
+def ELEV_AZ2NED(r, E, a):
+    theta = E
+    phi = 2 * pi - a
+    x, y, z= sph2cart(phi, theta, r);
+    NED=[]
+    NED.append(x)   # North
+    NED.append(-y)  # East
+    NED.append(-z) # Down
+    
+    return NED
+
+def sph2cart(azimuth,elevation,r):
+    x = r * math.cos(elevation) * math.cos(azimuth)
+    y = r * math.cos(elevation) * math.sin(azimuth)
+    z = r * math.sin(elevation)
+    return x, y, z
+
 #Function tha computes the coordinates of a satellite
 def computeCoordinates(esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime):
     t = esec
@@ -1050,116 +1085,104 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
     Rearth = 6.378e+06
     r = a-Rearth
 
-    latvis = []
-    for i in range(-720, 720):
-        # Radio latitud
-        latV = i*pi/1440
-        latV = latV*180/pi
-        satECEF = LLA2ECEF(latV, longObs, r)
-        userECEF = LLA2ECEF(latObs, longObs, altObs)
-        pointV = sub(satECEF, userECEF)
-        NED = ECEF2NED(pointV, latObs*pi/180, longObs*pi/180)
-        d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
-        alpha = math.asin((-NED[2])/d)*180/pi
-        if (alpha >= 10):
-            latvis.append(latV)
-
-    longneg1=[]
-    longneg2=[]
-    longpos1=[]
-    longpos2=[]
-    latneg=[]
-    latpos=[]
-
     if "GPS" in name:
-        a=round(latvis[0])
-        b=round(latvis[-1])
-        step=1.0
-    elif "STARLINK" in name:
-        a=round(latvis[0])
-        b=round(latvis[-1])
-        step=0.5
-    else:
-        a=round(latvis[0],2)
-        b=round(latvis[-1],2)
-        step=0.25
-
-    for latm in numpy.arange(a, b,step):
-
-        longneg=[]
-        longpos=[]
-                
-        for i in range(-360, 360):
-            longV = i*pi/360
-            longV = longV*180/pi
-            satECEF = LLA2ECEF(latm, longV, r)
+        latvis = []
+        for i in range(-720, 720):
+            # Radio latitud
+            latV = i*pi/1440
+            latV = latV*180/pi
+            satECEF = LLA2ECEF(latV, longObs, r)
             userECEF = LLA2ECEF(latObs, longObs, altObs)
             pointV = sub(satECEF, userECEF)
             NED = ECEF2NED(pointV, latObs*pi/180, longObs*pi/180)
             d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
             alpha = math.asin((-NED[2])/d)*180/pi
             if (alpha >= 10):
-                if (longV<0):
-                    longneg.append(longV)
-                elif (longV>0):
-                    longpos.append(longV)
-                else:
-                    longneg.append(longV)
-                    longpos.append(longV)
+                latvis.append(latV)
 
-
-
-        if len(longneg)>0:
-            latneg.append(latm)
-            if len(longpos)>0:
-                longneg1.append(longneg[0])
-                if abs(longpos[0])<abs(longneg[-1]):
-                    longneg2.append(longpos[0])
-                elif abs(longpos[0])>=abs(longneg[-1]):
-                    longneg2.append(longneg[-1])
-            else:
-                longneg1.append(longneg[0])
-                longneg2.append(longneg[-1])
-
-        if len(longpos)>0:
-            latpos.append(latm)
-            if len(longneg)>0:
+        longneg1=[]
+        longneg2=[]
+        longpos1=[]
+        longpos2=[]
+        latneg=[]
+        latpos=[]
+        a=round(latvis[0])
+        b=round(latvis[-1])
+        step=1.0
+        for latm in numpy.arange(a, b,step):
+            longneg=[]
+            longpos=[]
                 
-                longpos1.append(longpos[-1])
-                if abs(longpos[0])<abs(longneg[-1]):
-                    longpos2.append(longpos[0])
-                elif abs(longpos[0])>=abs(longneg[-1]):
-                    longpos2.append(longneg[-1])
-            else:
-                longpos1.append(longpos[-1])
-                longpos2.append(longpos[0]) 
+            for i in range(-360, 360):
+                longV = i*pi/360
+                longV = longV*180/pi
+                satECEF = LLA2ECEF(latm, longV, r)
+                userECEF = LLA2ECEF(latObs, longObs, altObs)
+                pointV = sub(satECEF, userECEF)
+                NED = ECEF2NED(pointV, latObs*pi/180, longObs*pi/180)
+                d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
+                alpha = math.asin((-NED[2])/d)*180/pi
+                if (alpha >= 10):
+                    if (longV<0):
+                        longneg.append(longV)
+                    elif (longV>0):
+                        longpos.append(longV)
+                    else:
+                        longneg.append(longV)
+                        longpos.append(longV)
 
-    negArea=[]
-    posArea=[]
-    #Creating area surfaces
-    for i in range(len(latneg)):
+
+
+            if len(longneg)>0:
+                latneg.append(latm)
+                if len(longpos)>0:
+                    longneg1.append(longneg[0])
+                    if abs(longpos[0])<abs(longneg[-1]):
+                        longneg2.append(longpos[0])
+                    elif abs(longpos[0])>=abs(longneg[-1]):
+                        longneg2.append(longneg[-1])
+                else:
+                    longneg1.append(longneg[0])
+                    longneg2.append(longneg[-1])
+
+            if len(longpos)>0:
+                latpos.append(latm)
+                if len(longneg)>0:
+                    longpos1.append(longpos[-1])
+                    if abs(longpos[0])<abs(longneg[-1]):
+                        longpos2.append(longpos[0])
+                    elif abs(longpos[0])>=abs(longneg[-1]):
+                        longpos2.append(longneg[-1])
+                else:
+                    longpos1.append(longpos[-1])
+                    longpos2.append(longpos[0]) 
+
+        negArea=[]
+        posArea=[]
+        #Creating area surfaces
+        for i in range(len(latneg)):
             latlng=[]
             latlng.append(latneg[i])
             latlng.append(longneg1[i])
             negArea.append(latlng)
     
-    latneg = latneg[::-1] #Inverting vector
-    longneg2 =longneg2[::-1]
-    for i in range(len(latneg)):
+        latneg = latneg[::-1] #Inverting vector
+        longneg2 =longneg2[::-1]
+        for i in range(len(latneg)):
             latlng=[]
             latlng.append(latneg[i])
             latlng.append(longneg2[i])
             negArea.append(latlng)
 
-    for i in range(len(latpos)):
+        for i in range(len(latpos)):
             latlng=[]
             latlng.append(latpos[i])
             latlng.append(longpos1[i])
             posArea.append(latlng)
 
-    latpos = latpos[::-1] #Inverting vector
-    longpos2 =longpos2[::-1]
-    for i in range(len(latpos)):
+        latpos = latpos[::-1] #Inverting vector
+        longpos2 =longpos2[::-1]
+        for i in range(len(latpos)):
             latlng=[]
             if (i==(len(latpos)-1)):
                 latlng.append(latpos[i])
@@ -1171,10 +1194,29 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
                 posArea.append(latlng)
 
 
-    area=[]
+        area=[]
 
-    area.append(posArea)
-    area.append(negArea)
+        area.append(posArea)
+        area.append(negArea)
+    else:
+        REarth = 6378.e3;                    #meters
+        h = r              #alçada orbital Iridium
+        Emin = 10                                            #min. elevation angle (degrees)
+        Emin = Emin * pi / 180
+        gamma = math.asin(math.cos(Emin) * REarth / (REarth + h))
+        beta = pi / 2 - gamma - Emin
+        r = math.sin(beta) * (REarth + h) / math.cos(Emin)
+        area = []
+        userECEF = LLA2ECEF(latObs, longObs, altObs)
+        for i in range(1,361):
+            a = (i - 1) * pi / 180
+            NEDvis = ELEV_AZ2NED(r, Emin, a)
+            ECEFvis = NED2ECEF(NEDvis, latObs*pi/180, longObs*pi/180)         #rotate from NED to ECEF
+            ECEFvis = sum(userECEF,ECEFvis)  #add ECEF coords. of observer
+            lla= ECEF2LLA(ECEFvis[0], ECEFvis[1], ECEFvis[2])
+            LAT=lla[0]
+            LON=lla[1]
+            area.append([LAT, LON])      #visibility zone
 
     return area
 
