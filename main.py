@@ -191,6 +191,8 @@ def constellation(constellation_name):
                         "n": sat["n"]})
     print("The constellation contains:",len(listSat),"satellites.")
     
+    
+    
     if len(listSat) == 0: #Handling error of non-existing constellation
         print("Error constellation does not exist")
         return render_template('errorConst.html')
@@ -244,7 +246,6 @@ def constellation(constellation_name):
             if (constName=="IRIDIUM"):
                 T=600
                 incTime=5
-
             visSat=[]
             latSat=[]
             longSat=[]
@@ -274,6 +275,11 @@ def constellation(constellation_name):
             
             if (a>amax):
                 amax=a
+            if((time.time()-start_time)>29):
+                satmessage=", but just "+str(i)+" are represented";
+                break
+            else:
+                satmessage="."
         
 
         # Visibility Area of User
@@ -282,7 +288,7 @@ def constellation(constellation_name):
         print("Time to process",constName,time.time()-start_time)
         atime = time.localtime()
         st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
-        text = [("You have selected the "+constName+" constellation, which contains "+str(len(listSat))+ " satellites")]
+        text = [("You have selected the "+constName+" constellation, which contains "+str(len(listSat))+ " satellites"+satmessage)]
         return render_template('constellation.html', entries=text, longs=json.dumps(longmap), lats=json.dumps(latmap), satname=satname, userlat=latUser, userlong=longUser,constName=constName,vis=json.dumps(vis),satID=satID,visPos=json.dumps(visPos))
 
 
