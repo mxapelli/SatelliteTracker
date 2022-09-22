@@ -275,7 +275,7 @@ def constellation(constellation_name):
             
             if (a>amax):
                 amax=a
-            if((time.time()-start_time)>29.5):
+            if((time.time()-start_time)>29):
                 satmessage=", but just "+str(i)+" are represented.";
                 break
             else:
