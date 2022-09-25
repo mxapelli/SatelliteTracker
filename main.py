@@ -11,7 +11,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
@@ -465,16 +465,17 @@ def doppler(catnr):
         cat.append(catN)
         c = ind[i]
 
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     actual_time = now.strftime("%d/%m/%Y %H:%M:%S")
     if len(timeP) < 1:
         return render_template('errorDoppler.html')
     init = timeP[0]
     fin = timeP[-1]
     duration = (fin-init)/7
+    print(actual_time)
 
     #Creating the texts for the ticks of Doppler graph
-    actual_time_obj = datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')# It convert the strings to datetime obj
+    actual_time_obj = datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')+timedelta(hours=2)# It convert the strings to datetime obj
     times = []
     days = []
     for i in range(8):
