@@ -81,7 +81,7 @@ def satellite(catnr):
         altUser = session['altUser']
     else:
         # Default coordinates of EETAC
-        latUser = 41.2757116961354
+        latUser = 41.2757116961354 
         longUser = 1.9872286269285848
         altUser = 4
 
@@ -681,6 +681,21 @@ def doppler(catnr):
     text4 = [("Maximum distance to satellite: " + str(round(max(dSatObs)/1000, 2)) + " km"),("Minimum distance to satellite: " + str(round(min(dSatObs)/1000, 2)) + " km")]
     return render_template('satAnalysis.html', entries1=text1, entries2=text2,speed=text3,distance=text4,doppler=fDReal, plot_url=plot_url, plotDoppler_url=plotDoppler_url, plotDistance_url=plotDistance_url,plotRadialSpeed_url=plotRadialSpeed_url,satname=name)
 
+@app.route('/<int:catnr>/satdata/<texto>')
+def error1(catnr,texto):
+    text=str(catnr)+"/satdata/"+texto
+    return render_template('errorDomain.html', entries=text)
+
+@app.route('/<int:catnr>/<texto>')
+def error2(catnr,texto):
+    text=str(catnr)+"/"+texto
+    return render_template('errorDomain.html', entries=text)
+
+@app.route('/<texto1>/<texto2>')
+def error3(texto1,texto2):
+    text=texto1+"/"+texto2
+    return render_template('errorDomain.html', entries=text)
+
 # Function to update database with new satellite data
 def dbUpdate():
     satsDB = []
@@ -973,7 +988,7 @@ def NED2ECEF(NED, phi, lamda):
 
 def ELEV_AZ2NED(r, E, a):
     theta = E
-    phi = 2 * pi - a
+    phi = a
     x, y, z= sph2cart(phi, theta, r);
     NED=[]
     NED.append(x)   # North
@@ -1089,133 +1104,20 @@ def dot(a, b):
 def visibilidadObs(a, latObs, longObs, altObs, name):
     # Visibilidad observador
     pi = math.pi
-    Rearth = 6.378e+06
-    r = a-Rearth
+    REarth = 6378.e3;                    #meters
+    h = a-REarth #Orbital Height Satellite
 
-    if "GPS" in name:
-        latvis = []
-        for i in range(-720, 720):
-            # Radio latitud
-            latV = i*pi/1440
-            latV = latV*180/pi
-            satECEF = LLA2ECEF(latV, longObs, r)
-            userECEF = LLA2ECEF(latObs, longObs, altObs)
-            pointV = sub(satECEF, userECEF)
-            NED = ECEF2NED(pointV, latObs*pi/180, longObs*pi/180)
-            d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
-            alpha = math.asin((-NED[2])/d)*180/pi
-            if (alpha >= 10):
-                latvis.append(latV)
-
-        longneg1=[]
-        longneg2=[]
-        longpos1=[]
-        longpos2=[]
-        latneg=[]
-        latpos=[]
-        a=round(latvis[0])
-        b=round(latvis[-1])
-        step=1.0
-        for latm in numpy.arange(a, b,step):
-            longneg=[]
-            longpos=[]
-                
-            for i in range(-360, 360):
-                longV = i*pi/360
-                longV = longV*180/pi
-                satECEF = LLA2ECEF(latm, longV, r)
-                userECEF = LLA2ECEF(latObs, longObs, altObs)
-                pointV = sub(satECEF, userECEF)
-                NED = ECEF2NED(pointV, latObs*pi/180, longObs*pi/180)
-                d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
-                alpha = math.asin((-NED[2])/d)*180/pi
-                if (alpha >= 10):
-                    if (longV<0):
-                        longneg.append(longV)
-                    elif (longV>0):
-                        longpos.append(longV)
-                    else:
-                        longneg.append(longV)
-                        longpos.append(longV)
-
-
-
-            if len(longneg)>0:
-                latneg.append(latm)
-                if len(longpos)>0:
-                    longneg1.append(longneg[0])
-                    if abs(longpos[0])<abs(longneg[-1]):
-                        longneg2.append(longpos[0])
-                    elif abs(longpos[0])>=abs(longneg[-1]):
-                        longneg2.append(longneg[-1])
-                else:
-                    longneg1.append(longneg[0])
-                    longneg2.append(longneg[-1])
-
-            if len(longpos)>0:
-                latpos.append(latm)
-                if len(longneg)>0:
-                    longpos1.append(longpos[-1])
-                    if abs(longpos[0])<abs(longneg[-1]):
-                        longpos2.append(longpos[0])
-                    elif abs(longpos[0])>=abs(longneg[-1]):
-                        longpos2.append(longneg[-1])
-                else:
-                    longpos1.append(longpos[-1])
-                    longpos2.append(longpos[0]) 
-
-        negArea=[]
-        posArea=[]
-        #Creating area surfaces
-        for i in range(len(latneg)):
-            latlng=[]
-            latlng.append(latneg[i])
-            latlng.append(longneg1[i])
-            negArea.append(latlng)
-    
-        latneg = latneg[::-1] #Inverting vector
-        longneg2 =longneg2[::-1]
-        for i in range(len(latneg)):
-            latlng=[]
-            latlng.append(latneg[i])
-            latlng.append(longneg2[i])
-            negArea.append(latlng)
-
-        for i in range(len(latpos)):
-            latlng=[]
-            latlng.append(latpos[i])
-            latlng.append(longpos1[i])
-            posArea.append(latlng)
-
-        latpos = latpos[::-1] #Inverting vector
-        longpos2 =longpos2[::-1]
-        for i in range(len(latpos)):
-            latlng=[]
-            if (i==(len(latpos)-1)):
-                latlng.append(latpos[i])
-                latlng.append(longpos2[i-1])
-                posArea.append(latlng)
-            else:
-                latlng.append(latpos[i])
-                latlng.append(longpos2[i])
-                posArea.append(latlng)
-
-
-        area=[]
-
-        area.append(posArea)
-        area.append(negArea)
-    else:
-        REarth = 6378.e3;                    #meters
-        h = r              #alçada orbital Iridium
+    if ("ISS" in name or "IRIDIUM" in name or "STARLINK" in name) and (abs(longObs)<150) and (abs(latObs)<70):             
         Emin = 10                                            #min. elevation angle (degrees)
         Emin = Emin * pi / 180
         gamma = math.asin(math.cos(Emin) * REarth / (REarth + h))
         beta = pi / 2 - gamma - Emin
         r = math.sin(beta) * (REarth + h) / math.cos(Emin)
         area = []
+        areapos=[]
+        areaneg=[]
         userECEF = LLA2ECEF(latObs, longObs, altObs)
-        for i in range(1,361):
+        for i in range(1,362):
             a = (i - 1) * pi / 180
             NEDvis = ELEV_AZ2NED(r, Emin, a)
             ECEFvis = NED2ECEF(NEDvis, latObs*pi/180, longObs*pi/180)         #rotate from NED to ECEF
@@ -1223,8 +1125,108 @@ def visibilidadObs(a, latObs, longObs, altObs, name):
             lla= ECEF2LLA(ECEFvis[0], ECEFvis[1], ECEFvis[2])
             LAT=lla[0]
             LON=lla[1]
-            area.append([LAT, LON])      #visibility zone
+            area.append([LAT,LON])
+    else:
+        Emin = 10                                            #min. elevation angle (degrees)
+        Emin = Emin * pi / 180
+        gamma = math.asin(math.cos(Emin) * REarth / (REarth + h))
+        beta = pi / 2 - gamma - Emin
+        r = math.sin(beta) * (REarth + h) / math.cos(Emin)
+        area = []
+        areapos=[]
+        areaneg=[]
+        userECEF = LLA2ECEF(latObs, longObs, altObs)
+        for i in range(1,362):
+            a = (i - 1) * pi / 180
+            NEDvis = ELEV_AZ2NED(r, Emin, a)
+            ECEFvis = NED2ECEF(NEDvis, latObs*pi/180, longObs*pi/180)         #rotate from NED to ECEF
+            ECEFvis = sum(userECEF,ECEFvis)  #add ECEF coords. of observer
+            lla= ECEF2LLA(ECEFvis[0], ECEFvis[1], ECEFvis[2])
+            LAT=lla[0]
+            LON=lla[1]
+            if LON>0:
+                if len(areapos)>0 and abs(areapos[-1][1]-LON)>100 and latObs>=0:
+                    areapos.append([90,areapos[-1][1]])
+                    areapos.append([90,0])
+                    areapos.append([LAT,0])
+                    areapos.append([LAT, LON])
+                elif len(areapos)>0 and abs(areapos[-1][1]-LON)>100 and latObs<0:
+                    areapos.append([areapos[-1][0],0])
+                    areapos.append([-90,0])
+                    areapos.append([-90,LON])
+                    areapos.append([LAT, LON])
+                elif len(areapos)>0 and abs(areapos[-1][0]-LAT)>10 and abs(LON)<4:
+                    areapos.append([areapos[-1][0],0])
+                    areapos.append([LAT,0])
+                    areapos.append([LAT,LON])
+                elif len(areapos)>0 and abs(areapos[-1][0]-LAT)>10 and abs(LON)>170:
+                    areapos.append([areapos[-1][0],180])
+                    areapos.append([LAT,180])
+                    areapos.append([LAT,LON])
+                else:
+                    areapos.append([LAT, LON])
+            else:
+                if len(areaneg)>0 and abs(areaneg[-1][1]-LON)>100 and latObs>=0:
+                    areaneg.append([areaneg[-1][0],0])
+                    areaneg.append([90,0])
+                    areaneg.append([90,-180])
+                    areaneg.append([LAT, -180])
+                elif len(areaneg)>0 and abs(areaneg[-1][1]-LON)>100 and latObs<0:
+                    areaneg.append([-90,areaneg[-1][1]])
+                    areaneg.append([-90,0])
+                    areaneg.append([LAT,0])
+                    areaneg.append([LAT, LON])
+                elif len(areaneg)>0 and abs(areaneg[-1][0]-LAT)>10 and abs(LON)<4:
+                    areaneg.append([areaneg[-1][0],0])
+                    areaneg.append([LAT,0])
+                    areaneg.append([LAT,LON])
+                elif len(areaneg)>0 and abs(areaneg[-1][0]-LAT)>10 and abs(LON)>173:
+                    areaneg.append([areaneg[-1][0],-180])
+                    areaneg.append([LAT,-180])
+                    areaneg.append([LAT,LON])
+                else:
+                    areaneg.append([LAT, LON])
+         
+        if len(areaneg)>1 and abs(areaneg[-1][1]-areaneg[0][1])>100 and latObs>=0:
+            areaneg.append([areaneg[-1][0],0])
+            areaneg.append([90,0])
+            areaneg.append([90,areaneg[0][1]])
+        if len(areaneg)>1 and abs(areaneg[-1][1]-areaneg[0][1])>100 and latObs<0:
+            areaneg.append([-90,areaneg[-1][1]])
+            areaneg.append([-90,0])
+            areaneg.append([areaneg[0][0],0])
+        if len(areaneg)>1 and abs(areaneg[-1][0]-areaneg[0][0])>5 and abs(areaneg[-1][1])<5:
+            areaneg.append([areaneg[-1][0],0])
+            areaneg.append([areaneg[0][0],0])
+        if len(areaneg)>1 and abs(areaneg[-1][0]-areaneg[0][0])>5 and abs(areaneg[-1][1])>175:
+            areaneg.append([areaneg[-1][0],-180])
+            areaneg.append([areaneg[0][0],-180])
+        
+        
 
+        if len(areapos)>1 and abs(areapos[-1][1]-areapos[0][1])>100 and latObs>=0:
+            areapos.append([areapos[-1][0],180])
+            areapos.append([90,180])
+            areapos.append([90,0])
+            areapos.append([areapos[0][0],0])
+        if len(areapos)>1 and abs(areapos[-1][1]-areapos[0][1])>100 and latObs<0:
+            areapos.append([areapos[-1][0],0])
+            areapos.append([-90,0])
+            areapos.append([-90,areapos[0][1]])
+        if len(areapos)>1 and abs(areapos[-1][0]-areapos[0][0])>5 and abs(areapos[-1][1])<5:
+            areapos.append([areapos[-1][0],0])
+            areapos.append([areapos[0][0],0])
+        if len(areapos)>1 and abs(areapos[-1][0]-areapos[0][0])>5 and abs(areapos[-1][1])>175:
+            areapos.append([areapos[-1][0],180])
+            areapos.append([areapos[0][0],180])
+        
+
+        if len(areapos)>0:
+            area.append(areapos)   
+        if len(areaneg)>0:
+            area.append(areaneg) 
+           #visibility zone
+    
     return area
 
 #Function that computes the time to ToA (Time of applicability)
