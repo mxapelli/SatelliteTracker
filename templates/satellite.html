@@ -101,14 +101,16 @@
         let markers = [];
 
         var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
-            iconSize: [40, 40], // size of the icon
+            iconSize: [40, 40], // size of the satellite icon
         });
-        var southWest = L.latLng(-89.98155760646617, -180),
-        northEast = L.latLng(89.99346179538875, 180);
+        var southWest = L.latLng(-89.98155760646617, -180), //Bounds of the map
+        northEast = L.latLng(89.99346179538875, 180);       
         var bounds = L.latLngBounds(southWest, northEast);
     
         userLLA=[]
-        userLLA.push(["{{userlat}}", "{{userlong}}"]);
+        userLLA.push(["{{userlat}}", "{{userlong}}"]);//Extracting user LLA position
+
+
         long=[{% for item in longs %}
             "{{ item }}",
             {% endfor %}]
@@ -117,12 +119,12 @@
             "{{ item }}",
             {% endfor %}]
 
-        satPos=[];
+        satPos=[]; //Extracting sat LLA positions
         for(var j=0; j<long.length; j++) {
             satPos.push([lat[j], long[j]]);
         }
 
-        const visPos= JSON.parse({{visPos|tojson}});
+        const visPos= JSON.parse({{visPos|tojson}}); //Extracting visibility area
 
 
         visSat=[{% for item in visSat %}
@@ -146,32 +148,31 @@
         };
         legend.addTo(map);
 
-            
-
     
-        esri = L.tileLayer(
+        esri = L.tileLayer( //Adding Layer
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 6,
             minZoom: 2,
             attribution: 'Tiles © Esri',
-            noWrap: true,              //this is the crucial line!
+            noWrap: true,              
             bounds: [
                 [-90, -180],
                 [90, 180]]
             });
     
+        //Adding Layer
         osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 6,
             minZoom: 2,
             attribution: 'OSM',
-            noWrap: true,              //this is the crucial line!
+            noWrap: true,              
             bounds: [
                 [-90, -180],
                 [90, 180]]
         }).addTo(map);
     
         var baseMaps = {
-            "Satellite": esri,
+            "Satellital": esri,
             "Default": osm
         };
 

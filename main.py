@@ -1,4 +1,7 @@
 import os
+from calc import *
+from coord import *
+from visibility import *
 from time import time
 from flask import Flask, render_template, request, session, redirect, url_for
 from dotenv import load_dotenv
@@ -22,7 +25,11 @@ import requests
 
 
 
+
+
 load_dotenv()  # use dotenv to hide sensitive credential as environment variables
+
+
 DATABASE_URL = f'mongodb+srv://MXapelli:{os.environ.get("passwordDB")}'\
     '@mongo-heroku-cluster.aiiqhhv.mongodb.net/satellites?retryWrites=true&w=majority'  # Get connection url from environment
 
@@ -409,7 +416,6 @@ def doppler(catnr):
 
         # Posicion Satelite respecto Observador
         userECEF = LLA2ECEF(latObs, longObs, altObs)
-        # Checkpoint Todo Correcto print(userECEF)
         userECI = ECEF2ECI(userECEF[0], userECEF[1],
                            userECEF[2], Gast*math.pi/180)
         satV = sub(userECI, ECI[n])
@@ -698,15 +704,19 @@ def error3(texto1,texto2):
 
 # Function to update database with new satellite data
 def dbUpdate():
+
     satsDB = []
     satsCelestrak = []
     start_time = time.time()
-    sats = mongo_db.satellites.find()
-    for i in sats:
+    sats = mongo_db.satellites.find() #Find all satellites
+
+    for i in sats: #Add DB satellites to array
         satsDB.append(i)
 
     constellations = ['GROUP=starlink', 'GROUP=iridium-next',
                       'GROUP=gps-ops', 'CATNR=25544', 'GROUP=iridium']
+    
+    #Download satellites from Celestrak
     for i in range(len(constellations)):
         result_data = requests.get(
             'https://celestrak.com/NORAD/elements/gp.php?'+constellations[i]+'&FORMAT=JSON')
@@ -736,6 +746,9 @@ def dbUpdate():
                             w = satsCelestrak[i][j]['ARG_OF_PERICENTER']
                             M = satsCelestrak[i][j]['MEAN_ANOMALY']
                             n = satsCelestrak[i][j]['MEAN_MOTION']
+                            sats = mongo_db.satellites.find({"noradID": noradID})
+                            if len(sats)>1:
+                                mongo_db.satellites.delete_one({"noradID": noradID})
                             id = {"noradID": catnr}
                             newvalues = {"$set": {"name": name, "epoch": epoch, "incl": incl,
                                                   "ecc": ecc, "omega": omega, "w": w, "M": M, "n": n}}
@@ -794,456 +807,6 @@ scheduler = BackgroundScheduler()
 job = scheduler.add_job(dbUpdate, 'interval', minutes=10)
 scheduler.start()
 
-#Function that computes GAST [deg] at current time + esec [sec]
-def GAST(esec):
-    # esec = ToA time in secs. from/to now (esec < 0 means ToA is in the past)
-    # Find Julian Date now
-    unixepoch = 2440587.5  # JD at unix epoch: 0h (UTC) 1/1/1970
-    unixseconds = time.time()
-    JD = unixepoch + unixseconds / (86400)
-    JToA = JD + esec / 86400  # Julian Date at ToA
-
-    # Greenwich Mean Sidereal Time (GMST) is the hour angle of the average position of the vernal equinox,
-    # neglecting short term motions of the equinox due to nutation. GAST is GMST corrected for
-    # the shift in the position of the vernal equinox due to nutation.
-    # GAST at a given epoch is the RA of the Greenwich meridian at that epoch (usually in time units).
-
-    # Find GAST in degrees at ToA
-    # epoch is 1/1/2000 at 12:00 UTC
-    J2000 = 2451545.0
-    midnight = round(JToA) - 0.5                   # midnight of JToA
-    days_since_midnight = JToA - midnight
-    hours_since_midnight = days_since_midnight * 24
-    days_since_epoch = JToA - J2000
-    centuries_since_epoch = days_since_epoch / 36525
-    whole_days_since_epoch = midnight - J2000
-    GAST = 6.697374558 + 0.06570982441908 * whole_days_since_epoch + 1.00273790935 * \
-        hours_since_midnight + 0.000026 * centuries_since_epoch**2  # GAST in hours from ?
-    GASTh = GAST % 24  # GAST in hours at ToA
-    # GAST in degrees at ToA (approx. 361º/24h)
-    GASTdeg = 15 * 1.0027855 * GASTh
-    return GASTdeg
-
-#Function that computes esec and GAST from a satelite
-def esecGAST(ToA):
-    unixepoch = 2440587.5  # JD at unix epoch: 0h (UTC) 1/1/1970
-    unixseconds = time.time()
-    JD = unixepoch + unixseconds / (86400)  # Julian Date now in UTC
-
-    # Compute current time in secs. from ToA
-    # MJD on 1/1/2022 at 00:00 UTC (see http://leapsecond.com/java/cal.htm)
-    MJ2022 = 59580
-    J2022 = MJ2022 + 2400000.5  # JD on 1/1/2022 at 00:00 UTC
-    JToA = J2022 + ToA - 1  # ToA in JD
-    esec = 86400 * (JD - JToA)  # Time since ToA in seconds
-
-    # Find GAST in degrees at ToA
-    J2000 = 2451545.0  # epoch is 1/1/2000 at 12:00 UTC
-    midnight = round(JToA) - 0.5  # midnight of JToA
-    days_since_midnight = JToA - midnight
-    hours_since_midnight = days_since_midnight * 24
-    days_since_epoch = JToA - J2000
-    centuries_since_epoch = days_since_epoch / 36525
-    whole_days_since_epoch = midnight - J2000
-    GAST = 6.697374558 + 0.06570982441908 * whole_days_since_epoch + 1.00273790935 * \
-        hours_since_midnight + 0.000026 * centuries_since_epoch**2  # GAST in hours from ?
-    GASTh = GAST % 24  # GAST in hours at ToA
-
-    # GAST in degrees at ToA (approx. 361º/24h)
-    GASTdegToA = 15 * 1.0027855 * GASTh
-    esecGAST = []
-    esecGAST.append(esec)
-    esecGAST.append(GASTdegToA)
-    return esecGAST
-
-#Function that transforms ECEF coordinates to ECI coordinates
-def ECEF2ECI(X, Y, Z, B):
-    ECI = []
-    Xe = math.cos(B)*X-math.sin(B)*Y
-    Ye = math.sin(B)*X+math.cos(B)*Y
-    Ze = Z
-    ECI.append(Xe)
-    ECI.append(Ye)
-    ECI.append(Ze)
-    return ECI
-
-#Function that transforms LLA coordinates to ECEF coordinates
-def LLA2ECEF(lat, lon, alt):
-    a = 6378137
-    e2 = 0.00669437999014
-    e = math.sqrt(e2)
-    lat = lat*math.pi/180
-    lon = lon*math.pi/180
-
-    coco = math.sqrt(1-e2*math.sin(lat)**2)
-    clat = math.cos(lat)
-    clong = math.cos(lon)
-    slat = math.sin(lat)
-    slong = math.sin(lon)
-    x = (a/coco+alt)*clat*clong
-    y = (a/coco+alt)*clat*slong
-    z = (a*(1-e2)/(coco)+alt)*slat
-    ecef = [x, y, z]
-    return ecef
-
-#Function that transforms ECEF coordinates to LLA coordinates
-def ECEF2LLA(x,y,z):
-    lla=[]
-    # LLA coordinates [lat, lon, alt] = ECEF2LLA(x, y, z)
-    # Convert from cartesian (x,y,z) to LLA coordinates in datum WGS84
-    A = 6378137
-    E2 = 0.00669437999014  # datos elipsoide WGS84
-    B = A*math.sqrt(1-E2)
-    EP = A*math.sqrt(E2)/B
-
-    r = math.sqrt(x**2+y**2)
-    EE2 = A**2-B**2
-    F = 54*B**2*z**2
-    G = r**2+(1-E2)*z**2-E2*EE2
-    C = E2**2*(F*r**2)/G**3
-    S = (1+C+math.sqrt(C**2+2*C))**(1/3)
-    P = F/(3*G**2*(S+1/S+1)**2)
-    Q = math.sqrt(1+2*E2**2*P)
-    ro = -E2*P*r/(1+Q)+math.sqrt(0.5*A**2*(1+1/Q) - (1-E2)*P*(z**2)/Q/(1+Q)-0.5*P*r**2)
-    U = math.sqrt(z**2+(r-ro*E2)**2)
-    V = math.sqrt((1-E2)*z**2+(r-ro*E2)**2)
-    Zo = (B**2*z)/(A*V)
-
-    ALT = U*(1-B**2/(A*V))
-    LAT = math.atan2((z+EP**2*Zo), r)
-    LONG = math.atan2(y, x)
-    lla.append(LAT*180/pi)
-    lla.append(LONG*180/pi)
-    lla.append(ALT)
-    return lla
-
-#Function that omputes ECEF coordinates from  Kepler orbital elements
-def Kepler2ECEF(t, a, io, ecc, Oo, dO, w, Mo, n):
-    # ECEF coordinates
-    ecef=[]
-    M = Mo + n * t  # Mean anomaly now [rad]
-    # Solve Keppler equation for eccentric anomally iteratively
-    # Loop is exited when we reach the desired tolerance
-    tol = 10**(-8)  # Converging tolerance
-    E = M
-    while True:
-        Eo = E
-        E = M + ecc * math.sin(Eo)
-        if abs(Eo - E) < tol:
-            break
-
-    # True anomaly
-    cosv = (math.cos(E) - ecc) / (1 - ecc * math.cos(E))
-    sinv = math.sqrt(1 - ecc**2) * math.sin(E) / (1 - ecc * math.cos(E))
-    v = math.atan2(sinv, cosv)
-
-    # Cartesian coordinates within the orbital plane
-    u = v + w
-    r = a * (1 - ecc * math.cos(E))
-    # Corrected right ascension (7.2921151467e-5 = rate of Earth rotation [rad/s])
-    O = Oo - 7.2921151467e-5 * t + dO * t
-    xp = r * math.cos(u)
-    yp = r * math.sin(u)
-
-    # ECEF coordinates [m]
-    x = xp * math.cos(O) - yp * math.cos(io) * math.sin(O)
-    y = xp * math.sin(O) + yp * math.cos(io) * math.cos(O)
-    z = yp * math.sin(io)
-
-    ecef.append(x)
-    ecef.append(y)
-    ecef.append(z)
-
-    return ecef
-
-#Function that transforms ECEF coordinates to NED
-def ECEF2NED(ECEF, phi, lamda):
-
-    # 1) Rotation Matrix from NED to ECEF: ECEF = M*NED
-    r = -math.sin(phi)*math.cos(lamda)
-    M = numpy.array([[(-math.sin(phi)*math.cos(lamda)), (-math.sin(lamda)), (-math.cos(phi)*math.cos(lamda))], [(-math.sin(phi)
-                    * math.sin(lamda)), (math.cos(lamda)), (-math.cos(phi)*math.sin(lamda))], [(math.cos(phi)), 0, (-math.sin(phi))]], dtype='f')
-    # 2) Compute NED coordinates
-    ECEFt = numpy.array([ECEF]).T
-    invM = numpy.linalg.inv(M)
-
-    NED = numpy.matmul(invM, ECEFt)
-    return NED
-
-#Function that transforms ECEF coordinates to NED
-def NED2ECEF(NED, phi, lamda):
-
-    # 1) Rotation Matrix from NED to ECEF: ECEF = M*NED
-    M = numpy.array([[(-math.sin(phi)*math.cos(lamda)), (-math.sin(lamda)), (-math.cos(phi)*math.cos(lamda))], [(-math.sin(phi)
-                    * math.sin(lamda)), (math.cos(lamda)), (-math.cos(phi)*math.sin(lamda))], [(math.cos(phi)), 0, (-math.sin(phi))]], dtype='f')
-    # 2) Compute NED coordinates
-    NEDt = numpy.array([NED]).T
-
-    ECEFT = numpy.matmul(M, NEDt)
-    ECEF=[]
-    ECEF.append(ECEFT[0][0])
-    ECEF.append(ECEFT[1][0])
-    ECEF.append(ECEFT[2][0])
-    return ECEF
-
-def ELEV_AZ2NED(r, E, a):
-    theta = E
-    phi = a
-    x, y, z= sph2cart(phi, theta, r);
-    NED=[]
-    NED.append(x)   # North
-    NED.append(-y)  # East
-    NED.append(-z) # Down
-    
-    return NED
-
-def sph2cart(azimuth,elevation,r):
-    x = r * math.cos(elevation) * math.cos(azimuth)
-    y = r * math.cos(elevation) * math.sin(azimuth)
-    z = r * math.sin(elevation)
-    return x, y, z
-
-#Function tha computes the coordinates of a satellite
-def computeCoordinates(esec, T, n, a, io, ecc, Oo, dO, w, Mo, incTime):
-    t = esec
-    NT = 1
-    j = 0
-    xmap = []
-    ymap = []
-    zmap = []
-    latmap = []
-    longmap = []
-    altmap = []
-    R = []
-    while t < esec + T * NT:
-        #Getting all the ECEF coordinates
-        ecef=Kepler2ECEF(t, a, io, ecc, Oo, dO, w, Mo, n)
-
-        xmap.append(ecef[0])
-        ymap.append(ecef[1])
-        zmap.append(ecef[2])
-        
-        # increase time
-        t = t + incTime
-    
-    #Getting all LLA coordinates
-    for i in range(len(xmap)):
-        lla=ECEF2LLA(xmap[i],ymap[i],zmap[i])
-        latmap.append(lla[0])
-        longmap.append(lla[1])
-        altmap.append(lla[2])
-
-    coordinates = []
-    coordinates.append(xmap)
-    coordinates.append(ymap)
-    coordinates.append(zmap)
-    coordinates.append(latmap)
-    coordinates.append(longmap)
-    coordinates.append(altmap)
-    return coordinates
-
-
-# Function that calculate cross product
-def cross(a, b):
-    result = [a[1]*b[2] - a[2]*b[1],
-              a[2]*b[0] - a[0]*b[2],
-              a[0]*b[1] - a[1]*b[0]]
-
-    return result
-
-# Normalize Vector
-def norm(a):
-    module = math.sqrt(a[0]**2+a[1]**2+a[2]**2)
-    V = []
-    V.append(a[0]/module)
-    V.append(a[1]/module)
-    V.append(a[2]/module)
-    return V
-
-# Product of vectors by value
-def prod(a, val):
-    products = []
-    for num1 in a:
-        products.append(num1*val)
-    return products
-
-# Division of vector by value
-def div(a, val):
-    products = []
-    for num1 in a:
-        products.append(num1/val)
-    return products
-
-# Sum of vectors
-def sum(a, b):
-    result = []
-    for num1, num2 in zip(a, b):
-        result.append(num1+num2)
-    return result
-
-# Substraction of vectors
-def sub(a, b):
-    result = []
-    for num1, num2 in zip(a, b):
-        result.append(num1-num2)
-    return result
-
-# Modulo of a vector
-def modulo(a):
-    result = math.sqrt(a[0]**2+a[1]**2+a[2]**2)
-    return result
-
-# Dot product of two vectors
-def dot(a, b):
-    result = 0.0
-    for n in range(len(a)):
-        result = result+a[n]*b[n]
-    return result
-
-#Function that computes the visibility area of the user
-def visibilidadObs(a, latObs, longObs, altObs, name):
-    # Visibilidad observador
-    pi = math.pi
-    REarth = 6378.e3;                    #meters
-    h = a-REarth #Orbital Height Satellite
-
-    if ("ISS" in name or "IRIDIUM" in name or "STARLINK" in name) and (abs(longObs)<150) and (abs(latObs)<70):             
-        Emin = 10                                            #min. elevation angle (degrees)
-        Emin = Emin * pi / 180
-        gamma = math.asin(math.cos(Emin) * REarth / (REarth + h))
-        beta = pi / 2 - gamma - Emin
-        r = math.sin(beta) * (REarth + h) / math.cos(Emin)
-        area = []
-        areapos=[]
-        areaneg=[]
-        userECEF = LLA2ECEF(latObs, longObs, altObs)
-        for i in range(1,362):
-            a = (i - 1) * pi / 180
-            NEDvis = ELEV_AZ2NED(r, Emin, a)
-            ECEFvis = NED2ECEF(NEDvis, latObs*pi/180, longObs*pi/180)         #rotate from NED to ECEF
-            ECEFvis = sum(userECEF,ECEFvis)  #add ECEF coords. of observer
-            lla= ECEF2LLA(ECEFvis[0], ECEFvis[1], ECEFvis[2])
-            LAT=lla[0]
-            LON=lla[1]
-            area.append([LAT,LON])
-    else:
-        Emin = 10                                            #min. elevation angle (degrees)
-        Emin = Emin * pi / 180
-        gamma = math.asin(math.cos(Emin) * REarth / (REarth + h))
-        beta = pi / 2 - gamma - Emin
-        r = math.sin(beta) * (REarth + h) / math.cos(Emin)
-        area = []
-        areapos=[]
-        areaneg=[]
-        userECEF = LLA2ECEF(latObs, longObs, altObs)
-        for i in range(1,362):
-            a = (i - 1) * pi / 180
-            NEDvis = ELEV_AZ2NED(r, Emin, a)
-            ECEFvis = NED2ECEF(NEDvis, latObs*pi/180, longObs*pi/180)         #rotate from NED to ECEF
-            ECEFvis = sum(userECEF,ECEFvis)  #add ECEF coords. of observer
-            lla= ECEF2LLA(ECEFvis[0], ECEFvis[1], ECEFvis[2])
-            LAT=lla[0]
-            LON=lla[1]
-            if LON>0:
-                if len(areapos)>0 and abs(areapos[-1][1]-LON)>100 and latObs>=0:
-                    areapos.append([90,areapos[-1][1]])
-                    areapos.append([90,0])
-                    areapos.append([LAT,0])
-                    areapos.append([LAT, LON])
-                elif len(areapos)>0 and abs(areapos[-1][1]-LON)>100 and latObs<0:
-                    areapos.append([areapos[-1][0],0])
-                    areapos.append([-90,0])
-                    areapos.append([-90,LON])
-                    areapos.append([LAT, LON])
-                elif len(areapos)>0 and abs(areapos[-1][0]-LAT)>10 and abs(LON)<4:
-                    areapos.append([areapos[-1][0],0])
-                    areapos.append([LAT,0])
-                    areapos.append([LAT,LON])
-                elif len(areapos)>0 and abs(areapos[-1][0]-LAT)>10 and abs(LON)>170:
-                    areapos.append([areapos[-1][0],180])
-                    areapos.append([LAT,180])
-                    areapos.append([LAT,LON])
-                else:
-                    areapos.append([LAT, LON])
-            else:
-                if len(areaneg)>0 and abs(areaneg[-1][1]-LON)>100 and latObs>=0:
-                    areaneg.append([areaneg[-1][0],0])
-                    areaneg.append([90,0])
-                    areaneg.append([90,-180])
-                    areaneg.append([LAT, -180])
-                elif len(areaneg)>0 and abs(areaneg[-1][1]-LON)>100 and latObs<0:
-                    areaneg.append([-90,areaneg[-1][1]])
-                    areaneg.append([-90,0])
-                    areaneg.append([LAT,0])
-                    areaneg.append([LAT, LON])
-                elif len(areaneg)>0 and abs(areaneg[-1][0]-LAT)>10 and abs(LON)<4:
-                    areaneg.append([areaneg[-1][0],0])
-                    areaneg.append([LAT,0])
-                    areaneg.append([LAT,LON])
-                elif len(areaneg)>0 and abs(areaneg[-1][0]-LAT)>10 and abs(LON)>173:
-                    areaneg.append([areaneg[-1][0],-180])
-                    areaneg.append([LAT,-180])
-                    areaneg.append([LAT,LON])
-                else:
-                    areaneg.append([LAT, LON])
-         
-        if len(areaneg)>1 and abs(areaneg[-1][1]-areaneg[0][1])>100 and latObs>=0:
-            areaneg.append([areaneg[-1][0],0])
-            areaneg.append([90,0])
-            areaneg.append([90,areaneg[0][1]])
-        if len(areaneg)>1 and abs(areaneg[-1][1]-areaneg[0][1])>100 and latObs<0:
-            areaneg.append([-90,areaneg[-1][1]])
-            areaneg.append([-90,0])
-            areaneg.append([areaneg[0][0],0])
-        if len(areaneg)>1 and abs(areaneg[-1][0]-areaneg[0][0])>5 and abs(areaneg[-1][1])<5:
-            areaneg.append([areaneg[-1][0],0])
-            areaneg.append([areaneg[0][0],0])
-        if len(areaneg)>1 and abs(areaneg[-1][0]-areaneg[0][0])>5 and abs(areaneg[-1][1])>175:
-            areaneg.append([areaneg[-1][0],-180])
-            areaneg.append([areaneg[0][0],-180])
-        
-        
-
-        if len(areapos)>1 and abs(areapos[-1][1]-areapos[0][1])>100 and latObs>=0:
-            areapos.append([areapos[-1][0],180])
-            areapos.append([90,180])
-            areapos.append([90,0])
-            areapos.append([areapos[0][0],0])
-        if len(areapos)>1 and abs(areapos[-1][1]-areapos[0][1])>100 and latObs<0:
-            areapos.append([areapos[-1][0],0])
-            areapos.append([-90,0])
-            areapos.append([-90,areapos[0][1]])
-        if len(areapos)>1 and abs(areapos[-1][0]-areapos[0][0])>5 and abs(areapos[-1][1])<5:
-            areapos.append([areapos[-1][0],0])
-            areapos.append([areapos[0][0],0])
-        if len(areapos)>1 and abs(areapos[-1][0]-areapos[0][0])>5 and abs(areapos[-1][1])>175:
-            areapos.append([areapos[-1][0],180])
-            areapos.append([areapos[0][0],180])
-        
-
-        if len(areapos)>0:
-            area.append(areapos)   
-        if len(areaneg)>0:
-            area.append(areaneg) 
-           #visibility zone
-    
-    return area
-
-#Function that computes the time to ToA (Time of applicability)
-def time2toa(epoch):
-    #Getting date and time from epoch
-    epochT = str(epoch).split("T")
-    epochT[1] = epochT[1].split(".")
-    hour = epochT[1][0]
-    date = epochT[0]
-
-    # Computing time to ToA
-    x = time.strptime(date+" " + hour, "%Y-%m-%d %H:%M:%S")
-    s = x.tm_yday
-    s = s+x.tm_hour/24+x.tm_min/(24*60)+x.tm_sec/(24*60*60)
-    ToA = s
-
-    return ToA
 
 # Function that checks if the json object is correct
 def jsonCheck(datosObtenidos):

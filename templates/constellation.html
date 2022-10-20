@@ -121,7 +121,7 @@
         }).addTo(map);
     
         var baseMaps = {
-                "Satellite": esri,
+                "Satellital": esri,
                 "Default": osm
         };
         
@@ -158,12 +158,12 @@
 
         
 
-        if (constName=="STARLINK"){
+        if (constName=="STARLINK"){ //Iconsize Starlink smaller
                 var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
                 iconSize: [15,15], // size of the icon
                 });
         }
-        else{
+        else{   // Default Iconsize 
                 var satIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/FP_Satellite_icon.svg/1200px-FP_Satellite_icon.svg.png',
                 iconSize: [40,40], // size of the icon
                 });
@@ -184,7 +184,7 @@
 
 
         
-        /*Legend specific*/
+        //Legend configuration
         var legend = L.control({ position: "topright" });
                 
         legend.onAdd = function(map) {
@@ -197,12 +197,16 @@
 
     
 
-
+        //Establishing User position
         var latUser = parseFloat(userLLA[0][0]).toFixed(2);
         var longUser = parseFloat(userLLA[0][1]).toFixed(2);
         var markerUser = L.marker(userLLA[0]).bindPopup("User position: Lat:"+latUser+" Long:"+longUser).addTo(map);
+
+        //Visibility Area
         var polygon = L.polygon(visPos,{weight: 0, fillColor: 'blue',fillOpacity: 0.4}).addTo(map);
-        c=0
+
+        
+        c=0 // Groundtrack of satellites
         colors=['red','blue','green','yellow','orange','purple','sienna','lime','indigo','silver','fuchsia','cyan','navy']
         for (let i = 0; i < satPos.length; i++) {
             if (constName!="STARLINK"){
