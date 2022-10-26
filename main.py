@@ -96,7 +96,7 @@ def satellite(catnr):
 
     if sat is None: # Handling error of non-existing satellite
         print("Error satellite does not exist")
-        return render_template('error.html')
+        return render_template('error.html',error="Error 501",title="Error Satellite Not Found",text="We are sorry, there aren't any satellites with "+ str(catnr)+" as a Norad ID Number. We suggest that you try again with another ID number.")
 
     #Getting data of satellite
     name = sat['name']
@@ -202,7 +202,7 @@ def constellation(constellation_name):
     
     if len(listSat) == 0: #Handling error of non-existing constellation
         print("Error constellation does not exist")
-        return render_template('errorConst.html')
+        return render_template('error.html',error="Error 501",title="Error Constellation Not Found",text="We are sorry, the selected satellite constellation could not be processed as some information is missing. We suggest that you try a different one.")
     else:
         latmap = []
         longmap = []
@@ -316,7 +316,7 @@ def doppler(catnr):
     sat = mongo_db.satellites.find_one({"noradID": catnr})
 
     if sat is None: # Handling non-existing satellite
-        return render_template('error.html')
+        return render_template('error.html',error="Error 501",title="Error Satellite Not Found",text="We are sorry, there aren't any satellites with "+ str(catnr)+" as a Norad ID Number. We suggest that you try again with another ID number.")
 
     name = sat["name"]
     freq = sat["freq"]
@@ -474,7 +474,7 @@ def doppler(catnr):
     now = datetime.now(timezone.utc)
     actual_time = now.strftime("%d/%m/%Y %H:%M:%S")
     if len(timeP) < 1:
-        return render_template('errorDoppler.html')
+        return render_template('error.html',error="Error Not Visible",title="Satellite Not Visible",text="We are sorry, the selected satellite "+name+" is not visible during his next orbit. We suggest that you try later or select a different satellite.")
     init = timeP[0]
     fin = timeP[-1]
     duration = (fin-init)/7
@@ -689,18 +689,18 @@ def doppler(catnr):
 
 @app.route('/<int:catnr>/satdata/<texto>')
 def error1(catnr,texto):
-    text=str(catnr)+"/satdata/"+texto
-    return render_template('errorDomain.html', entries=text)
+    text2=str(catnr)+"/satdata/"+texto
+    return render_template('error.html',error="Error 404",title="URL Not Found",text="We are sorry, the requested URL "+ text2 +" was not found on the server.")
 
 @app.route('/<int:catnr>/<texto>')
 def error2(catnr,texto):
-    text=str(catnr)+"/"+texto
-    return render_template('errorDomain.html', entries=text)
+    text2=str(catnr)+"/"+texto
+    return render_template('error.html',error="Error 404",title="URL Not Found",text="We are sorry, the requested URL "+ text2 +" was not found on the server.")
 
 @app.route('/<texto1>/<texto2>')
 def error3(texto1,texto2):
-    text=texto1+"/"+texto2
-    return render_template('errorDomain.html', entries=text)
+    text2=texto1+"/"+texto2
+    return render_template('error.html',error="Error 404",title="URL Not Found",text="We are sorry, the requested URL "+ text2 +" was not found on the server.")
 
 # Function to update database with new satellite data
 def dbUpdate():
