@@ -254,8 +254,8 @@ def constellation(constellation_name):
                 T=600
                 incTime=5
             if (constName=="INMARSAT"):
-                T=600
-                incTime=5
+                T=360000
+                incTime=10000
             visSat=[]
             latSat=[]
             longSat=[]
@@ -750,8 +750,9 @@ def dbUpdate():
                             M = satsCelestrak[i][j]['MEAN_ANOMALY']
                             n = satsCelestrak[i][j]['MEAN_MOTION']
                             sats = mongo_db.satellites.find({"noradID": noradID})
-                            print(sats.count())
-                            if len(sats)>1:
+                            count = len(list(sats))
+                            print(count)
+                            if count>1:
                                 mongo_db.satellites.delete_one({"noradID": noradID})
                             id = {"noradID": catnr}
                             newvalues = {"$set": {"name": name, "epoch": epoch, "incl": incl,
@@ -810,7 +811,7 @@ def dbUpdate():
 
 # Scheduler to program db update every 10 minutes
 scheduler = BackgroundScheduler()
-job = scheduler.add_job(dbUpdate, 'interval', minutes=1)
+job = scheduler.add_job(dbUpdate, 'interval', minutes=360)
 scheduler.start()
 
 
