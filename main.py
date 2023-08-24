@@ -253,6 +253,9 @@ def constellation(constellation_name):
             if (constName=="IRIDIUM"):
                 T=600
                 incTime=5
+            if (constName=="INMARSAT"):
+                T=600
+                incTime=5
             visSat=[]
             latSat=[]
             longSat=[]
@@ -714,7 +717,7 @@ def dbUpdate():
         satsDB.append(i)
 
     constellations = ['GROUP=starlink', 'GROUP=iridium-next',
-                      'GROUP=gps-ops', 'CATNR=25544', 'GROUP=iridium']
+                      'GROUP=gps-ops', 'CATNR=25544', 'GROUP=iridium', 'NAME=inmarsat']
     
     #Download satellites from Celestrak
     for i in range(len(constellations)):
@@ -747,6 +750,7 @@ def dbUpdate():
                             M = satsCelestrak[i][j]['MEAN_ANOMALY']
                             n = satsCelestrak[i][j]['MEAN_MOTION']
                             sats = mongo_db.satellites.find({"noradID": noradID})
+                            print(sats.count())
                             if len(sats)>1:
                                 mongo_db.satellites.delete_one({"noradID": noradID})
                             id = {"noradID": catnr}
@@ -791,6 +795,8 @@ def dbUpdate():
                 fre = 1626.1042*10**6
             elif "GPS" in name:
                 fre = 1575.42*10**6
+            elif "INMARSAT" in name: ##Corregir freq
+                fre = 1575.42*10**6
 
             if fre != 0:
                 sat = {"noradID": catnr, "name": name, "epoch": epoch, "ecc": ecc, "incl": incl, "omega": omega, "w": w, "M": M,
@@ -804,7 +810,7 @@ def dbUpdate():
 
 # Scheduler to program db update every 10 minutes
 scheduler = BackgroundScheduler()
-job = scheduler.add_job(dbUpdate, 'interval', minutes=10)
+job = scheduler.add_job(dbUpdate, 'interval', minutes=1)
 scheduler.start()
 
 
