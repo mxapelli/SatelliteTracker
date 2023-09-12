@@ -254,8 +254,8 @@ def constellation(constellation_name):
                 T=600
                 incTime=5
             if (constName=="INMARSAT"):
-                T=360000
-                incTime=10000
+                T=7200
+                incTime=5
             visSat=[]
             latSat=[]
             longSat=[]
