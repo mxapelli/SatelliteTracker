@@ -16,6 +16,7 @@ from io import BytesIO
 import base64
 from datetime import datetime,timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
+import numpy as np
 
 
 import time
@@ -108,7 +109,6 @@ def satellite(catnr):
     w = sat['w']
     M = sat['M']
     n = sat['n']
-
     # Computing time to ToA
     ToA = time2toa(epoch)
     result = esecGAST(ToA)
@@ -136,6 +136,7 @@ def satellite(catnr):
     latmap = coordinates[3]
     longmap = coordinates[4]
     altmap = coordinates[5]
+    
 
     # Check Visibility of satellite
     elev = []
@@ -145,9 +146,9 @@ def satellite(catnr):
         satECEF = [xmap[i], ymap[i], zmap[i]]
         userECEF = LLA2ECEF(latUser, longUser, altUser)
         pointV = sub(satECEF, userECEF)
-        NED = ECEF2NED(pointV, latUser*pi/180, longUser*pi/180)
-        d = math.sqrt(NED[0]**2+NED[1]**2+NED[2]**2)
-        alpha = math.asin((-NED[2])/d)*180/pi
+        NED = np.array(ECEF2NED(pointV, latUser*np.pi/180, longUser*np.pi/180))
+        d = np.linalg.norm(NED)
+        alpha = np.arcsin((-NED[2])/d) * 180/np.pi
         if (alpha >= 10):
             elev.append(alpha)
             visSat.append(1)
@@ -162,6 +163,7 @@ def satellite(catnr):
     visPos = visibilidadObs(a, latUser, longUser, altUser, name)
 
     print("Time to process",name,time.time()-start_time)
+    print(latmap[0],longmap[0])
     atime = time.localtime()
     st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
     now = datetime.now()
