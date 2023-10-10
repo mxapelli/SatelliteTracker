@@ -17,6 +17,7 @@ import base64
 from datetime import datetime,timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 import numpy as np
+from satellite_position import *
 
 
 import time
@@ -95,6 +96,11 @@ def satellite(catnr):
 
     sat = mongo_db.satellites.find_one({"noradID": catnr})
 
+    line1="1 "+catnr+"U"
+    line2="2 "+catnr+ sat['incl']
+    
+
+
     if sat is None: # Handling error of non-existing satellite
         print("Error satellite does not exist")
         return render_template('error.html',error="Error 501",title="Error Satellite Not Found",text="We are sorry, there aren't any satellites with "+ str(catnr)+" as a Norad ID Number. We suggest that you try again with another ID number.")
@@ -170,8 +176,7 @@ def satellite(catnr):
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     session['time'] = dt_string
     print("session info", dt_string)
-    text = [("You have selected the "+name+" satellite with Catalog Number: " +
-             str(catnr))]
+    text = [("You have selected the "+name+" satellite with Catalog Number: " + str(catnr))]
     return render_template('satellite.html', entries=text, longs=longmap, lats=latmap, number=str(catnr), userlat=latUser, userlong=longUser, vis=vis, visSat=visSat, satName=name,visPos=json.dumps(visPos))
 
 @app.route('/<constellation_name>')
@@ -319,6 +324,7 @@ def doppler(catnr):
     
     #Checking if satellite exists
     sat = mongo_db.satellites.find_one({"noradID": catnr})
+    
 
     if sat is None: # Handling non-existing satellite
         return render_template('error.html',error="Error 501",title="Error Satellite Not Found",text="We are sorry, there aren't any satellites with "+ str(catnr)+" as a Norad ID Number. We suggest that you try again with another ID number.")
