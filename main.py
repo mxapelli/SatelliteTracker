@@ -178,7 +178,6 @@ def satellite(catnr):
     visPos = visibilidadObs(a, latUser, longUser, altUser, name)
 
     print("Time to process",name,time.time()-start_time)
-    print(latmap[0],longmap[0])
     atime = time.localtime()
     st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
     ##now = datetime.now()
