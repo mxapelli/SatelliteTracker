@@ -96,10 +96,23 @@ def satellite(catnr):
 
     sat = mongo_db.satellites.find_one({"noradID": catnr})
 
-    line1="1 "+catnr+"U"
-    line2="2 "+catnr+ sat['incl']
-    
+    result= requests.get('https://celestrak.com/NORAD/elements/gp.php?CATNR='+str(catnr)+'&FORMAT=2le')
+    print(result)
 
+    tle_data = result.text.split('\n')
+    print(tle_data)
+    line1 = tle_data[0].strip()  # 1st TLE line
+    line2 = tle_data[1].strip()
+    print(line1)
+    print(line2)
+    
+    lon_pos=[]
+    lat_pos=[]
+
+    positions=compute_satellite_positions(line1,line2)
+    # Extracting latitude and longitude values
+    lat_pos = [entry[1] for entry in positions]
+    lon_pos = [entry[2] for entry in positions]
 
     if sat is None: # Handling error of non-existing satellite
         print("Error satellite does not exist")
@@ -172,12 +185,13 @@ def satellite(catnr):
     print(latmap[0],longmap[0])
     atime = time.localtime()
     st = time.strftime("%a, %d %b %Y %H:%M:%S ", atime)
-    now = datetime.now()
+    ##now = datetime.now()
+    now = datetime.datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     session['time'] = dt_string
     print("session info", dt_string)
     text = [("You have selected the "+name+" satellite with Catalog Number: " + str(catnr))]
-    return render_template('satellite.html', entries=text, longs=longmap, lats=latmap, number=str(catnr), userlat=latUser, userlong=longUser, vis=vis, visSat=visSat, satName=name,visPos=json.dumps(visPos))
+    return render_template('satellite.html', entries=text, longs=lon_pos, lats=lat_pos, number=str(catnr), userlat=latUser, userlong=longUser, vis=vis, visSat=visSat, satName=name,visPos=json.dumps(visPos))
 
 @app.route('/<constellation_name>')
 def constellation(constellation_name):
@@ -829,6 +843,31 @@ def jsonCheck(datosObtenidos):
         return datosObtenidos.json()
     except ValueError:
         return ("error")
+    
+def json_to_tle(json_obj):
+    # Extract values from the JSON object
+    norad_cat_id = json_obj['NORAD_CAT_ID']
+    classification = json_obj['CLASSIFICATION_TYPE']
+    int_designator_year = json_obj['OBJECT_ID'].split('-')[0][-2:] # Last two digits of year
+    int_designator_launch_number = json_obj['OBJECT_ID'].split('-')[1]
+    epoch_year = json_obj['EPOCH'][:4][-2:]
+    epoch_day = str((int(json_obj['EPOCH'][5:7]) - 1) * 30 + int(json_obj['EPOCH'][8:10]) + float(json_obj['EPOCH'][11:23])/86400)[:11]
+    mean_motion_dot = json_obj['MEAN_MOTION_DOT']
+    bstar = json_obj['BSTAR']
+    elset_num = json_obj['ELEMENT_SET_NO']
+    inclination = json_obj['INCLINATION']
+    ra_of_asc_node = json_obj['RA_OF_ASC_NODE']
+    eccentricity = str(json_obj['ECCENTRICITY'])[2:]
+    arg_of_pericenter = json_obj['ARG_OF_PERICENTER']
+    mean_anomaly = json_obj['MEAN_ANOMALY']
+    mean_motion = json_obj['MEAN_MOTION']
+    rev_at_epoch = json_obj['REV_AT_EPOCH']
+
+    # Format the TLE strings
+    line1 = f"1 {norad_cat_id:5}U {int_designator_year}{int_designator_launch_number} {epoch_year}{epoch_day} {mean_motion_dot: .8f} 00000+0 {bstar: .8f} 0 {elset_num:4}"
+    line2 = f"2 {norad_cat_id:5} {inclination:7.4f} {ra_of_asc_node:7.4f} {eccentricity:7} {arg_of_pericenter:7.4f} {mean_anomaly:7.4f} {mean_motion:11.8f} {rev_at_epoch:5}"
+
+    return line1, line2
 
 
 if __name__ == '__main__':

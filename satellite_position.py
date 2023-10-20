@@ -39,10 +39,8 @@ def compute_satellite_positions(line1, line2):
     return positions
 
 # Example usage
-line1 = '1 39215U 13038A   23283.17449397  .00000133  00000+0  00000+0 0  9992'
-line2 = '2 39215   2.8519   9.5912 0003790 204.4114 252.2040  1.00272111 37435'
-
-positions = compute_satellite_positions(line1, line2)
-for time, lat, lon in positions:
-    print(f"Time: {time} Latitude: {lat}° Longitude: {lon}°")
+line1="1 28899U 05044A   23292.85946681 -.00000309  00000+0  00000+0 0  9995"
+line2="2 28899   3.9123  41.0646 0003056 187.8173 198.7336  1.00838083 65780"
+print(line1)
+print(line2)
 
