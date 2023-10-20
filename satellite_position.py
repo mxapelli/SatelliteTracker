@@ -38,9 +38,4 @@ def compute_satellite_positions(line1, line2):
     
     return positions
 
-# Example usage
-line1="1 28899U 05044A   23292.85946681 -.00000309  00000+0  00000+0 0  9995"
-line2="2 28899   3.9123  41.0646 0003056 187.8173 198.7336  1.00838083 65780"
-print(line1)
-print(line2)
 

@@ -97,15 +97,11 @@ def satellite(catnr):
     sat = mongo_db.satellites.find_one({"noradID": catnr})
 
     result= requests.get('https://celestrak.com/NORAD/elements/gp.php?CATNR='+str(catnr)+'&FORMAT=2le')
-    print(result)
 
     tle_data = result.text.split('\n')
-    print(tle_data)
     line1 = tle_data[0].strip()  # 1st TLE line
     line2 = tle_data[1].strip()
-    print(line1)
-    print(line2)
-    
+
     lon_pos=[]
     lat_pos=[]
 
