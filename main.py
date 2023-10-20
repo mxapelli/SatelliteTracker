@@ -14,7 +14,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-from datetime import datetime,timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 import numpy as np
 from satellite_position import *
@@ -492,7 +492,7 @@ def doppler(catnr):
         cat.append(catN)
         c = ind[i]
 
-    now = datetime.now(timezone.utc)
+    now = datetime.datetime.now(timezone.utc)
     actual_time = now.strftime("%d/%m/%Y %H:%M:%S")
     if len(timeP) < 1:
         return render_template('error.html',error="Error Not Visible",title="Satellite Not Visible",text="We are sorry, the selected satellite "+name+" is not visible during his next orbit. We suggest that you try later or select a different satellite.")
@@ -502,7 +502,7 @@ def doppler(catnr):
     print(actual_time)
 
     #Creating the texts for the ticks of Doppler graph
-    actual_time_obj = datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')+timedelta(hours=2)# It convert the strings to datetime obj
+    actual_time_obj = datetime.datetime.strptime(actual_time, '%d/%m/%Y %H:%M:%S')+timedelta(hours=2)# It convert the strings to datetime obj
     times = []
     days = []
     for i in range(8):
@@ -823,7 +823,7 @@ def dbUpdate():
                 mongo_db.satellites.insert_one(sat)
                 print(name, " has been inserted in DB")
     print("Added Completed")
-    now = datetime.now()
+    now = datetime.datetime.now()
     t = time.time()-start_time
     print("Database updated at", now, "It took",t, "seconds to complete the task.")
 
